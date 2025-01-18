@@ -1,0 +1,322 @@
+"use client";
+
+import {
+  addRecurringExpense,
+  deleteRecurringExpense,
+} from "@/actions/recurringExpense";
+import { EXPENSE_MAP, EXPENSE_UTILITY } from "@/enums/ExpenseTypes";
+import { RecurringExpense, Reminder, User } from "@/types/app";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Group,
+  NumberInput,
+  Select,
+  Stack,
+  Text,
+  TextInput,
+  Transition,
+} from "@mantine/core";
+import {
+  IconCalendarWeek,
+  IconChartPie3,
+  IconCirclePlus,
+  IconSquareRoundedPlus,
+} from "@tabler/icons-react";
+import { Trash2 } from "lucide-react";
+import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
+import RecurringExpenseChart from "./Charts/RecurringExpenseChart";
+import { ExpenseWrapper } from "./common/ExpenseWrapper";
+import { SlideLeftWrapper } from "./common/SlideLeftWrapper";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import Calendar from "./Calendar";
+import CountUp from "react-countup";
+
+export type Action = "delete" | "update" | "create";
+export type ExpenseOptimisticUpdate = (action: {
+  action: Action;
+  expense: RecurringExpense;
+}) => void;
+
+interface ExpenseProps {
+  expenses: RecurringExpense[];
+  reminders: Reminder[];
+  user: User;
+}
+
+interface ReducerProps {
+  action: Action;
+  expense: RecurringExpense;
+}
+
+interface CountProps {
+  number: number;
+  title: string;
+  duration: number;
+  color: string;
+}
+
+const recurringReducer = (
+  state: RecurringExpense[],
+  { action, expense }: ReducerProps
+) => {
+  switch (action) {
+    case "delete":
+      return state.filter(({ id }) => id !== expense.id);
+    case "update":
+      return state.map((e) => (e.id === expense.id ? expense : e));
+    case "create":
+      return [...state, expense];
+    default:
+      return state;
+  }
+};
+
+const FormContent = () => {
+  const { pending } = useFormStatus();
+
+  return (
+    <Group gap={0}>
+      <TextInput
+        name="expense"
+        placeholder="Expense Name&#42;"
+        className="w-full md:w-[250px]"
+      />
+      <NumberInput
+        name="amount"
+        placeholder="Expense Amount&#42;"
+        className="w-[50%] mt-2 pr-2 md:mt-0 md:pl-2 md:w-[150px]"
+        hideControls
+      />
+      <Select
+        placeholder="Day"
+        data={Array.from({ length: 31 }, (v, i) => String(i + 1))}
+        allowDeselect={true}
+        name="day"
+        className="w-[50%] mt-2 md:mt-0 md:mr-2 md:w-[135px]"
+      />
+      <Select
+        placeholder="Pick value"
+        data={Object.keys(EXPENSE_MAP)}
+        defaultValue={EXPENSE_UTILITY}
+        allowDeselect={false}
+        name="type"
+        className="w-full mt-2 md:mt-0 md:w-[160px]"
+      />
+      <Box className="md:ml-2 w-full md:w-fit mt-2 md:mt-0">
+        <Button type="submit" bg="gold.5" fullWidth loading={pending}>
+          <IconCirclePlus />
+        </Button>
+      </Box>
+    </Group>
+  );
+};
+
+const AddRecurringForm = ({
+  optimisticUpdate,
+}: {
+  optimisticUpdate: ExpenseOptimisticUpdate;
+}) => {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleAddExpense = async (data: FormData) => {
+    // add fake data temporarily
+    const newExpense: RecurringExpense = {
+      id: -1,
+      created_at: "",
+      user_id: "",
+      day: "1",
+      amount: Number(data.get("amount")),
+      type: data.get("type") as string,
+      expense_name: data.get("expense") as string,
+    };
+
+    optimisticUpdate({ action: "create", expense: newExpense });
+
+    await addRecurringExpense(data);
+
+    formRef.current?.reset();
+  };
+
+  return (
+    <Box>
+      <form ref={formRef} action={(data) => handleAddExpense(data)}>
+        <FormContent />
+      </form>
+    </Box>
+  );
+};
+
+const ExpenseItem = ({
+  expense,
+  optimisticUpdate,
+}: {
+  expense: RecurringExpense;
+  optimisticUpdate: ExpenseOptimisticUpdate;
+}) => {
+  const handleDelete = async () => {
+    optimisticUpdate({ action: "delete", expense });
+
+    await deleteRecurringExpense(expense.id);
+  };
+
+  return (
+    <Group
+      className="overflow-hidden shadow-md lg:w-[49%] w-full rounded-md bg-white px-3 py-2 relative transition-all"
+      justify="space-between"
+      wrap="nowrap"
+    >
+      <Box
+        className="w-3 h-full absolute left-0 rounded-tl-md rounded-bl-md"
+        bg={EXPENSE_MAP[expense.type]}
+      />
+      <Text w="60%" pl={8}>
+        {expense.expense_name}
+      </Text>
+      <Text w="20%">${expense.amount}</Text>
+      <ActionIcon variant="transparent" color="black" size="30px">
+        <Trash2 onClick={() => handleDelete()} />
+      </ActionIcon>
+    </Group>
+  );
+};
+
+const CountWrapper = ({ number, title, duration, color }: CountProps) => {
+  return (
+    <Group
+      gap="2"
+      miw={170}
+      style={{ fontSize: "18px" }}
+      justify="center"
+      wrap="nowrap"
+      className=""
+    >
+      <Text size="18px">{title}:</Text>
+      <CountUp
+        style={{ color: color, minWidth: "65px" }}
+        end={number}
+        duration={duration}
+        formattingFn={(num) => "$" + num.toLocaleString()}
+      />
+    </Group>
+  );
+};
+
+export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
+  const CHART = "chart";
+  const CALENDAR = "calendar";
+
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [selectedVisual, setSelectedVisual] = useState<string>(CHART);
+
+  const [optimisticExpenses, optimisticExpensesUpdate] = useOptimistic(
+    expenses,
+    recurringReducer
+  );
+
+  useEffect(() => setMounted(true), []);
+
+  const { total, surplus } = useMemo(() => {
+    let total = 0;
+    expenses.forEach((expense) => (total += expense.amount));
+
+    return { total, surplus: user.monthly_budget - total };
+  }, [expenses]);
+
+  return (
+    <Stack>
+      <Text size="1.75rem">Recurring Expenses</Text>
+      <AddRecurringForm optimisticUpdate={optimisticExpensesUpdate} />
+      <Stack
+        style={{ width: "100%" }}
+        gap="md"
+        className="bg-slate-100 rounded-md p-4 shadow-lg"
+        align="flex-start"
+      >
+        <Group className="bg-white rounded-md w-full p-4" mih={60}>
+          <Transition
+            mounted={mounted}
+            transition="fade-right"
+            duration={700}
+            timingFunction="ease"
+          >
+            {(styles) => (
+              <Box
+                style={styles}
+                className="gap-3 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-8"
+              >
+                <CountWrapper
+                  number={user.monthly_budget}
+                  title="Budget"
+                  duration={1}
+                  color={"black"}
+                />
+                <CountWrapper
+                  number={total}
+                  title="Expenses"
+                  duration={2}
+                  color={"red"}
+                />
+                <CountWrapper
+                  number={surplus}
+                  title="Excess"
+                  duration={3}
+                  color={"green"}
+                />
+              </Box>
+            )}
+          </Transition>
+        </Group>
+        <Group
+          w="100%"
+          justify="space-between"
+          pb="lg"
+          mah="500px"
+          className="overflow-y-auto"
+        >
+          {optimisticExpenses?.map((expense) => (
+            <ExpenseItem
+              expense={expense}
+              key={expense.id}
+              optimisticUpdate={optimisticExpensesUpdate}
+            />
+          ))}
+        </Group>
+        <Box className="min-h-96 w-full bg-white rounded-lg">
+          <Group className="w-full" justify="center">
+            <Group gap={0} w={150}>
+              <ActionIcon
+                w="50%"
+                p="md"
+                onClick={() => setSelectedVisual(CHART)}
+                color={selectedVisual === CHART ? "gold" : "#f0f2f2"}
+                style={{ borderRadius: "0", borderBottomLeftRadius: "8px" }}
+              >
+                <IconChartPie3 color="black" />
+              </ActionIcon>
+              <ActionIcon
+                w="50%"
+                p="md"
+                onClick={() => setSelectedVisual(CALENDAR)}
+                color={selectedVisual === CALENDAR ? "gold" : "#f0f2f2"}
+                style={{ borderRadius: "0", borderBottomRightRadius: "8px" }}
+              >
+                <IconCalendarWeek color="black" />
+              </ActionIcon>
+            </Group>
+          </Group>
+          {selectedVisual === CHART ? (
+            <RecurringExpenseChart expenses={expenses} />
+          ) : (
+            <Calendar expenses={expenses} reminders={reminders} />
+          )}
+        </Box>
+      </Stack>
+    </Stack>
+  );
+}
+
+export default RecurringExpenses;

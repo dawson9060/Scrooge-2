@@ -1,0 +1,3 @@
+supabase account used for auth - dawson9060@gmail.com - password: Cooper906! -> Database password: gettothechopper
+
+generate supabase types -> npx supabase gen types --lang=typescript --project-id "vexmwpvzmgegwkzqgugk" --schema public > database.types.ts
