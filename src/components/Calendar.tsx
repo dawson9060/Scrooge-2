@@ -34,7 +34,16 @@ interface AddReminderProps {
 }
 
 interface ViewModalProps {
-  event: object | undefined;
+  event: {
+    title: string;
+    extendedProps: {
+      type: string;
+      reminderId: number;
+      expenseId: number;
+      reminderDate: string;
+      amount: number;
+    };
+  };
   opened: boolean;
   open: Function;
   close: any;
@@ -81,13 +90,13 @@ const ViewEventModal = ({ event, opened, open, close }: ViewModalProps) => {
   const handleReminderDelete = async () => {
     close();
 
-    await deleteReminder(event?.extendedProps.reminderId);
+    await deleteReminder(event?.extendedProps?.reminderId);
   };
 
   const handleExpenseDelete = async () => {
     close();
 
-    await deleteRecurringExpense(event?.extendedProps.expenseId);
+    await deleteRecurringExpense(event?.extendedProps?.expenseId);
   };
 
   return (
@@ -99,14 +108,14 @@ const ViewEventModal = ({ event, opened, open, close }: ViewModalProps) => {
       <ModalBody>
         {type === REMINDER ? (
           <Stack gap="sm">
-            <Text>Reminder Date: {event?.extendedProps.reminderDate}</Text>
+            <Text>Reminder Date: {event?.extendedProps?.reminderDate}</Text>
             <Text>Reminder Name: {event?.title} </Text>
           </Stack>
         ) : (
           <Stack gap="sm">
             <Text>Expense Name: {event?.title}</Text>
             <Text>
-              Expense Amount: ${formatNumber(event?.extendedProps.amount)}
+              Expense Amount: ${formatNumber(event?.extendedProps?.amount)}
             </Text>
           </Stack>
         )}
@@ -132,11 +141,11 @@ const Calendar = ({
   expenses,
   reminders,
 }: {
-  expenses: RecurringExpense[];
-  reminders: Reminder[];
+  expenses: RecurringExpense[] | null;
+  reminders: Reminder[] | null;
 }) => {
   const mappedExpenses = useMemo(() => {
-    return expenses.map((item: RecurringExpense) => {
+    return expenses?.map((item: RecurringExpense) => {
       return {
         title: item.expense_name,
         date: getCalendarDate(item.day),
@@ -151,7 +160,7 @@ const Calendar = ({
   console.log("MAPPED EXPENSES", mappedExpenses);
 
   const mappedReminders = useMemo(() => {
-    return reminders.map((reminder) => {
+    return reminders?.map((reminder) => {
       return {
         title: reminder.name,
         date: reminder.date,
@@ -164,11 +173,11 @@ const Calendar = ({
   }, [reminders]);
 
   const [activeData, setActiveData] = useState([
-    ...mappedExpenses,
-    ...mappedReminders,
+    ...(mappedExpenses ?? []),
+    ...(mappedReminders ?? []),
   ]);
-  const [selectedDate, setSelectedDate] = useState();
-  const [selectedEvent, setSelectedEvent] = useState();
+  const [selectedDate, setSelectedDate] = useState<string>();
+  const [selectedEvent, setSelectedEvent] = useState<object | undefined>();
 
   const [addReminderOpened, { open: addOpen, close: addClose }] =
     useDisclosure(false);
@@ -176,7 +185,7 @@ const Calendar = ({
     useDisclosure(false);
 
   useEffect(() => {
-    setActiveData([...mappedExpenses, ...mappedReminders]);
+    setActiveData([...(mappedExpenses ?? []), ...(mappedReminders ?? [])]);
   }, [mappedExpenses, mappedReminders]);
 
   const handleDateClick = (info: any) => {
@@ -211,6 +220,7 @@ const Calendar = ({
         close={addClose}
       />
       <ViewEventModal
+        // @ts-ignore
         event={selectedEvent}
         opened={viewModalOpened}
         open={viewOpen}

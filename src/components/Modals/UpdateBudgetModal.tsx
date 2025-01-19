@@ -36,7 +36,7 @@ export const UpdateBudgetModal = () => {
           hideControls
           placeholder="Input Monthly Budget"
           value={monthlyBudget}
-          onChange={(val) => setMonthlyBudget(val)}
+          onChange={(val) => setMonthlyBudget(val as number)}
         />
 
         <Group mt={20} justify="flex-end" gap="xs">

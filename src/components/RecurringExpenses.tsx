@@ -22,18 +22,13 @@ import {
   IconCalendarWeek,
   IconChartPie3,
   IconCirclePlus,
-  IconSquareRoundedPlus,
 } from "@tabler/icons-react";
 import { Trash2 } from "lucide-react";
 import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
-import RecurringExpenseChart from "./Charts/RecurringExpenseChart";
-import { ExpenseWrapper } from "./common/ExpenseWrapper";
-import { SlideLeftWrapper } from "./common/SlideLeftWrapper";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import Calendar from "./Calendar";
 import CountUp from "react-countup";
+import { useFormStatus } from "react-dom";
+import Calendar from "./Calendar";
+import RecurringExpenseChart from "./Charts/RecurringExpenseChart";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -42,8 +37,8 @@ export type ExpenseOptimisticUpdate = (action: {
 }) => void;
 
 interface ExpenseProps {
-  expenses: RecurringExpense[];
-  reminders: Reminder[];
+  expenses: RecurringExpense[] | null;
+  reminders: Reminder[] | null;
   user: User;
 }
 
@@ -213,7 +208,7 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
   const [selectedVisual, setSelectedVisual] = useState<string>(CHART);
 
   const [optimisticExpenses, optimisticExpensesUpdate] = useOptimistic(
-    expenses,
+    expenses ?? [],
     recurringReducer
   );
 
@@ -221,10 +216,10 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
 
   const { total, surplus } = useMemo(() => {
     let total = 0;
-    expenses.forEach((expense) => (total += expense.amount));
+    expenses?.forEach((expense) => (total += expense.amount ?? 0));
 
     return { total, surplus: user.monthly_budget - total };
-  }, [expenses]);
+  }, [expenses, user]);
 
   return (
     <Stack>

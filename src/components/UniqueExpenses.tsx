@@ -40,7 +40,7 @@ export type ExpenseOptimisticUpdate = (action: {
 }) => void;
 
 interface ExpenseProps {
-  expenses: UniqueExpense[];
+  expenses: UniqueExpense[] | null;
 }
 
 interface ReducerProps {
@@ -110,8 +110,8 @@ const AddForm = ({
       id: -1,
       created_at: "",
       user_id: "",
-      type: data.get("type"),
-      amount: data.get("amount"),
+      type: (data.get("type") as string) ?? "Utility",
+      amount: Number(data.get("amount") ?? 0),
       expense_name: data.get("expense") as string,
     };
 
@@ -169,13 +169,13 @@ const ExpenseStats = ({ expenses }: ExpenseProps) => {
     if (inViewport && !mounted) {
       setMounted(true);
     }
-  }, [inViewport]);
+  }, [inViewport, mounted]);
 
   const { totalExpenses, largestExpense } = useMemo(() => {
     let total = 0;
     let largest = 0;
 
-    expenses.forEach((expense) => {
+    expenses?.forEach((expense) => {
       if (expense.type === "expense" && expense.amount > largest) {
         largest = expense.amount;
       }
@@ -280,7 +280,7 @@ const DatePickerPopover = ({
             maxDate={new Date()}
             type="range"
             value={selectedRange}
-            onChange={setSelectedRange}
+            onChange={() => setSelectedRange()}
           />
         </Group>
       </Popover.Dropdown>
@@ -290,7 +290,7 @@ const DatePickerPopover = ({
 
 export function UniqueExpenses({ expenses }: ExpenseProps) {
   const [optimisticExpenses, optimisticUpdate] = useOptimistic(
-    expenses,
+    expenses ?? [],
     uniqueReducer
   );
   const [selectedRange, setSelectedRange] = useState<[Date, Date | null]>([
@@ -308,7 +308,7 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
     console.log("start", start);
     console.log("end", end);
 
-    return expenses.filter((expense) => {
+    return expenses?.filter((expense) => {
       const creationMilli = new Date(expense.created_at).getTime();
       return creationMilli >= startMilli && creationMilli <= endMilli;
     });
@@ -327,7 +327,7 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
   };
 
   const handleDownload = () => {
-    const formattedExpenses = expensesInRange.map((expense) => {
+    const formattedExpenses = expensesInRange?.map((expense) => {
       return {
         Amount: expense.amount,
         Type: expense.type,
@@ -335,19 +335,21 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
         Date: new Date(expense.created_at).toLocaleDateString(),
       };
     });
-    console.log("formatted", formattedExpenses);
-    const csvString = jsonToCSV(formattedExpenses);
 
-    const file = new Blob([csvString], { type: "text/csv" });
-    const a = document.createElement("a");
+    if (formattedExpenses) {
+      const csvString = jsonToCSV(formattedExpenses);
 
-    a.download = "expenses";
-    a.href = URL.createObjectURL(file);
-    a.addEventListener("click", (e) => {
-      setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000);
-    });
+      const file = new Blob([csvString], { type: "text/csv" });
+      const a = document.createElement("a");
 
-    a.click();
+      a.download = "expenses";
+      a.href = URL.createObjectURL(file);
+      a.addEventListener("click", (e) => {
+        setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000);
+      });
+
+      a.click();
+    }
   };
 
   console.log("selected range", selectedRange);
@@ -357,6 +359,7 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
         <Text size="1.75rem">Unique Expenses</Text>
         <Group gap="md">
           <DatePickerPopover
+            // @ts-ignore
             selectedRange={selectedRange}
             setSelectedRange={(val: [Date, Date]) => handleSelect(val)}
           />
@@ -372,7 +375,7 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
         className="bg-slate-100 rounded-md p-4 shadow-lg"
         align="flex-start"
       >
-        <ExpenseStats expenses={expensesInRange} />
+        <ExpenseStats expenses={expensesInRange ?? []} />
         <Group w="100%" wrap="wrap" pb="lg">
           {expensesInRange?.map((expense) => (
             <TransactionItem
@@ -383,7 +386,7 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
           ))}
         </Group>
         <UniqueExpenseChart
-          expenses={expensesInRange}
+          expenses={expensesInRange ?? []}
           selectedRange={selectedRange}
         />
       </Stack>

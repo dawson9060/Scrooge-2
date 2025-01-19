@@ -1,7 +1,7 @@
 "use client";
 
 import { addReminder, deleteReminder } from "@/actions/reminders";
-import { RecurringExpense, Reminder } from "@/types/app";
+import { RecurringExpense, Reminder, User } from "@/types/app";
 import {
   ActionIcon,
   Box,
@@ -16,21 +16,20 @@ import {
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
-import { User } from "@supabase/supabase-js";
 import { Trash2 } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { getTimeGreeting } from "../../utils/utilityFunctions";
 
 interface Props {
   user: User;
-  expenses: RecurringExpense[];
-  reminders: Reminder[];
+  expenses: RecurringExpense[] | null;
+  reminders: Reminder[] | null;
 }
 
-const ReminderDrawer = ({ reminders }: { reminders: Reminder[] }) => {
+const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
   const [opened, { open, close }] = useDisclosure(false);
 
-  const formRef = useRef(null);
+  const formRef = useRef();
 
   const { upcomingCount, formattedReminders } = useMemo(() => {
     let count = 0;
@@ -46,6 +45,7 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] }) => {
         reminder.date_timestamp - today <= weekInMilli
       ) {
         count++;
+        //@ts-ignore
         newReminder.isUpcoming = true;
       }
 
@@ -62,7 +62,8 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] }) => {
 
     await addReminder(formData);
 
-    formRef.current?.reset();
+    //@ts-ignore
+    formRef?.current?.reset();
   };
 
   const handleDelete = async (id: number) => {
@@ -73,6 +74,7 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] }) => {
     <>
       <Drawer opened={opened} onClose={close} title="Reminders" maw="100vw">
         <DrawerBody p={0}>
+          {/* @ts-ignore */}
           <form ref={formRef} action={(data) => handleAdd(data)}>
             <Group wrap="nowrap" className="w-full">
               <TextInput w="100%" placeholder="Name" name="name" />
@@ -89,12 +91,14 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] }) => {
             </Button>
           </form>
           <Divider my="lg" />
-          <Stack className="w-full h-full overflow-y-auto gap-10 pb-2">
+          <Stack className="w-full h-full overflow-y-auto gap-3 pb-2">
             {formattedReminders?.map((reminder) => (
               <Group
+                key={reminder.id}
                 wrap="nowrap"
                 className="relative bg-slate-100 rounded-lg p-4 shadow-md"
               >
+                {/* @ts-ignore */}
                 {reminder.isUpcoming && (
                   <Box
                     className="w-3 h-full absolute left-0 rounded-tl-md rounded-bl-md"
@@ -127,7 +131,7 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] }) => {
   );
 };
 
-export function Welcome({ user, expenses, reminders }: Props) {
+export function Welcome({ user, reminders }: Props) {
   return (
     <Stack className="my-10" mih={80}>
       <Stack className="p-5 pb-3 rounded-lg shadow-md break-words" bg="#fabf1b">

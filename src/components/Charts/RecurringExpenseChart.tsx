@@ -18,7 +18,7 @@ import { formatNumber } from "../../../utils/utilityFunctions";
 import { useMemo, useState } from "react";
 
 interface ExpenseProp {
-  expenses: RecurringExpense[];
+  expenses: RecurringExpense[] | null;
 }
 
 const LegendItem = ({ color, name }: { color: string; name: string }) => {
@@ -32,22 +32,23 @@ const LegendItem = ({ color, name }: { color: string; name: string }) => {
 
 function RecurringExpenseChart({ expenses }: ExpenseProp) {
   // const randomHexColor = require('random-hex-color');
-  // const [showLegend, setShowLegend] = useState(false);
   const [showStatus, setShowStatus] = useState("hide");
 
   const donutData = useMemo(() => {
-    let donutData = {};
+    let donutData: {
+      [key: string]: { name: string; value: number; color: string };
+    } = {};
 
-    expenses.forEach((expense) => {
+    expenses?.forEach((expense) => {
       if (!donutData[expense.type]) {
         donutData[expense.type] = {
           name: expense.type,
-          value: expense.amount,
+          value: expense.amount ?? 0,
           color: EXPENSE_MAP[expense.type],
         };
       } else {
         donutData[expense.type].value =
-          donutData[expense.type].value + expense.amount;
+          donutData[expense.type].value + (expense.amount ?? 0);
       }
     });
 
@@ -86,7 +87,7 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
               justify="space-evenly"
             >
               {Object.entries(EXPENSE_MAP).map(([key, value]) => (
-                <LegendItem color={value} name={key} />
+                <LegendItem key={key} color={value} name={key} />
               ))}
             </Group>
           )}
@@ -102,7 +103,6 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
           ]}
           onChange={setShowStatus}
         />
-        {/* <Button onClick={() => setShowLegend(!showLegend)}>{showLegend ? 'Hide Legend' : 'Show Legend'}</Button> */}
       </Group>
     </Stack>
   );
