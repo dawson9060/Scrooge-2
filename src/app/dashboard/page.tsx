@@ -43,7 +43,7 @@ export default async function Dashboard() {
   return (
     <>
       {userInfo && (
-        <Stack className="max-w-screen-xl min-h-screen w-full mx-auto px-6 md:px-10">
+        <Stack className="max-w-screen-xl min-h-screen overflow-x-hidden w-full mx-auto px-6 md:px-10">
           <Welcome
             user={userInfo[0]}
             expenses={recurringExpenses}

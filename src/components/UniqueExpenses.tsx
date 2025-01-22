@@ -233,7 +233,6 @@ const TransactionItem = ({
     <Group
       className="overflow-hidden shadow-md lg:w-[49%] w-full rounded-md bg-white px-3 py-2 relative transition-all"
       justify="space-between"
-      wrap="nowrap"
     >
       <Box
         className="w-3 h-full absolute left-0 rounded-tl-md rounded-bl-md"
@@ -280,7 +279,7 @@ const DatePickerPopover = ({
             maxDate={new Date()}
             type="range"
             value={selectedRange}
-            onChange={() => setSelectedRange()}
+            onChange={(val) => setSelectedRange(val)}
           />
         </Group>
       </Popover.Dropdown>

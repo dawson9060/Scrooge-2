@@ -16,6 +16,7 @@ import { ResponsiveContainer } from "recharts";
 import "@mantine/charts/styles.css";
 import { formatNumber } from "../../../utils/utilityFunctions";
 import { useMemo, useState } from "react";
+import { useViewportSize } from "@mantine/hooks";
 
 interface ExpenseProp {
   expenses: RecurringExpense[] | null;
@@ -33,6 +34,8 @@ const LegendItem = ({ color, name }: { color: string; name: string }) => {
 function RecurringExpenseChart({ expenses }: ExpenseProp) {
   // const randomHexColor = require('random-hex-color');
   const [showStatus, setShowStatus] = useState("hide");
+
+  const { height, width } = useViewportSize();
 
   const donutData = useMemo(() => {
     let donutData: {
@@ -60,8 +63,8 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
       <ResponsiveContainer width="auto" height={"100%"} minHeight={384}>
         <DonutChart
           h={384}
-          size={270}
-          thickness={30}
+          size={width > 380 ? 270 : 150}
+          thickness={width > 380 ? 30 : 20}
           valueFormatter={(value) => `$${formatNumber(value)}`}
           data={Object.values(donutData)}
           tooltipDataSource="segment"
