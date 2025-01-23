@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const router = useRouter();
 
   const handleSignUp = async () => {
-    const { success } = await signup(name, email, password);
+    const { success } = await signup(email, password);
 
     if (!success) {
       notifications.show({
