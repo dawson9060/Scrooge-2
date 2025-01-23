@@ -1,31 +1,38 @@
 "use client";
 
 import { Button, Stack, Text, TextInput } from "@mantine/core";
-import { login } from "./actions";
 
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { signup } from "./actions";
 import "./styles.css";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const router = useRouter();
 
-  const handleLogin = async () => {
-    const { success } = await login(email, password);
+  const handleSignUp = async () => {
+    const { success } = await signup(name, email, password);
 
     if (!success) {
       notifications.show({
-        title: "Login Error",
-        message: "Incorrect Email / Password",
+        title: "Sign-Up Error",
+        message: "Please Try Again",
         position: "top-right",
         color: "red",
       });
     } else {
-      router.push("/dashboard");
+      notifications.show({
+        title: "Success",
+        message: "Please check your email to confirm your account",
+        position: "top-right",
+        color: "green",
+      });
+
+      router.push("/login");
     }
   };
 
@@ -59,12 +66,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.currentTarget.value)}
             />
+
             <Button
-              onClick={handleLogin}
+              onClick={handleSignUp}
               bg="gold"
               className="rounded-md w-full"
             >
-              Log In
+              Register
             </Button>
             <Button
               type="submit"
@@ -72,9 +80,9 @@ export default function LoginPage() {
               c="blue"
               fw="normal"
               className="self-center"
-              onClick={() => router.push("/register")}
+              onClick={() => router.push("/login")}
             >
-              Sign Up
+              Already have an account? Login
             </Button>
           </Stack>
         </form>
