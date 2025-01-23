@@ -33,7 +33,7 @@ export const AuthModal = ({}) => {
   });
 
   async function onSubmit(values: any) {
-    await login(values);
+    // await login(values);
   }
 
   return (
