@@ -49,7 +49,6 @@ export const getCalendarDate = (day: string | null) => {
 };
 
 export const getTimeGreeting = (name: string | null) => {
-  console.log("NAME", name);
   const date = new Date();
   const hours = date.getHours();
 
