@@ -29,6 +29,9 @@ import CountUp from "react-countup";
 import { useFormStatus } from "react-dom";
 import Calendar from "./Calendar";
 import RecurringExpenseChart from "./Charts/RecurringExpenseChart";
+import * as motion from "motion/react-client";
+import { AnimatePresence } from "motion/react";
+import { SlideDownWrapper } from "./common/SlideDownWrapper";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -82,7 +85,7 @@ const FormContent = () => {
       />
       <NumberInput
         name="amount"
-        placeholder="Expense Amount&#42;"
+        placeholder="Amount&#42;"
         className="w-[50%] mt-2 pr-2 md:mt-0 md:pl-2 md:w-[150px]"
         hideControls
       />
@@ -115,6 +118,8 @@ const AddRecurringForm = ({
 }: {
   optimisticUpdate: ExpenseOptimisticUpdate;
 }) => {
+  const [showForm, setShowForm] = useState<boolean>(false);
+
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleAddExpense = async (data: FormData) => {
@@ -137,11 +142,23 @@ const AddRecurringForm = ({
   };
 
   return (
-    <Box>
-      <form ref={formRef} action={(data) => handleAddExpense(data)}>
-        <FormContent />
-      </form>
-    </Box>
+    <>
+      <Group justify="space-between" mb="sm">
+        <Text size="1.75rem">Recurring Expenses</Text>
+        <Button
+          variant="light"
+          fw="normal"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Hide" : "Add Expense"}
+        </Button>
+      </Group>
+      <SlideDownWrapper isOpen={showForm}>
+        <form ref={formRef} action={(data) => handleAddExpense(data)}>
+          <FormContent />
+        </form>
+      </SlideDownWrapper>
+    </>
   );
 };
 
@@ -200,17 +217,14 @@ const CountWrapper = ({ number, title, duration, color }: CountProps) => {
   );
 };
 
-export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
-  const CHART = "chart";
-  const CALENDAR = "calendar";
-
+const SummarySection = ({
+  expenses,
+  user,
+}: {
+  expenses: RecurringExpense[];
+  user: User;
+}) => {
   const [mounted, setMounted] = useState<boolean>(false);
-  const [selectedVisual, setSelectedVisual] = useState<string>(CHART);
-
-  const [optimisticExpenses, optimisticExpensesUpdate] = useOptimistic(
-    expenses ?? [],
-    recurringReducer
-  );
 
   useEffect(() => setMounted(true), []);
 
@@ -222,49 +236,105 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
   }, [expenses, user]);
 
   return (
-    <Stack>
-      <Text size="1.75rem">Recurring Expenses</Text>
+    <Group className="bg-white rounded-md w-full p-4" mih={60}>
+      <Transition
+        mounted={mounted}
+        transition="fade-right"
+        duration={700}
+        timingFunction="ease"
+      >
+        {(styles) => (
+          <Box
+            style={styles}
+            className="gap-3 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-8"
+          >
+            <CountWrapper
+              number={user.monthly_budget}
+              title="Budget"
+              duration={1}
+              color={"black"}
+            />
+            <CountWrapper
+              number={total}
+              title="Expenses"
+              duration={2}
+              color={"red"}
+            />
+            <CountWrapper
+              number={surplus}
+              title="Excess"
+              duration={3}
+              color={"green"}
+            />
+          </Box>
+        )}
+      </Transition>
+    </Group>
+  );
+};
+
+const ChartDisplaySection = ({
+  expenses,
+  reminders,
+}: {
+  expenses: RecurringExpense[];
+  reminders: Reminder[] | null;
+}) => {
+  const CHART = "chart";
+  const CALENDAR = "calendar";
+
+  const [selectedVisual, setSelectedVisual] = useState<string>(CHART);
+
+  return (
+    <Box className="min-h-96 w-full bg-white rounded-lg">
+      <Group className="w-full" justify="center">
+        <Group gap={0} w={150}>
+          <ActionIcon
+            w="50%"
+            p="md"
+            onClick={() => setSelectedVisual(CHART)}
+            color={selectedVisual === CHART ? "gold" : "#f0f2f2"}
+            style={{ borderRadius: "0", borderBottomLeftRadius: "8px" }}
+          >
+            <IconChartPie3 color="black" />
+          </ActionIcon>
+          <ActionIcon
+            w="50%"
+            p="md"
+            onClick={() => setSelectedVisual(CALENDAR)}
+            color={selectedVisual === CALENDAR ? "gold" : "#f0f2f2"}
+            style={{ borderRadius: "0", borderBottomRightRadius: "8px" }}
+          >
+            <IconCalendarWeek color="black" />
+          </ActionIcon>
+        </Group>
+      </Group>
+      {selectedVisual === CHART ? (
+        <RecurringExpenseChart expenses={expenses} />
+      ) : (
+        <Calendar expenses={expenses} reminders={reminders} />
+      )}
+    </Box>
+  );
+};
+
+export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
+  const [optimisticExpenses, optimisticExpensesUpdate] = useOptimistic(
+    expenses ?? [],
+    recurringReducer
+  );
+
+  return (
+    <Stack gap={0}>
       <AddRecurringForm optimisticUpdate={optimisticExpensesUpdate} />
       <Stack
         style={{ width: "100%" }}
         gap="md"
+        mt="sm"
         className="bg-slate-100 rounded-md p-4 shadow-lg"
         align="flex-start"
       >
-        <Group className="bg-white rounded-md w-full p-4" mih={60}>
-          <Transition
-            mounted={mounted}
-            transition="fade-right"
-            duration={700}
-            timingFunction="ease"
-          >
-            {(styles) => (
-              <Box
-                style={styles}
-                className="gap-3 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-8"
-              >
-                <CountWrapper
-                  number={user.monthly_budget}
-                  title="Budget"
-                  duration={1}
-                  color={"black"}
-                />
-                <CountWrapper
-                  number={total}
-                  title="Expenses"
-                  duration={2}
-                  color={"red"}
-                />
-                <CountWrapper
-                  number={surplus}
-                  title="Excess"
-                  duration={3}
-                  color={"green"}
-                />
-              </Box>
-            )}
-          </Transition>
-        </Group>
+        <SummarySection expenses={optimisticExpenses} user={user} />
         <Group
           w="100%"
           justify="space-between"
@@ -280,35 +350,10 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
             />
           ))}
         </Group>
-        <Box className="min-h-96 w-full bg-white rounded-lg">
-          <Group className="w-full" justify="center">
-            <Group gap={0} w={150}>
-              <ActionIcon
-                w="50%"
-                p="md"
-                onClick={() => setSelectedVisual(CHART)}
-                color={selectedVisual === CHART ? "gold" : "#f0f2f2"}
-                style={{ borderRadius: "0", borderBottomLeftRadius: "8px" }}
-              >
-                <IconChartPie3 color="black" />
-              </ActionIcon>
-              <ActionIcon
-                w="50%"
-                p="md"
-                onClick={() => setSelectedVisual(CALENDAR)}
-                color={selectedVisual === CALENDAR ? "gold" : "#f0f2f2"}
-                style={{ borderRadius: "0", borderBottomRightRadius: "8px" }}
-              >
-                <IconCalendarWeek color="black" />
-              </ActionIcon>
-            </Group>
-          </Group>
-          {selectedVisual === CHART ? (
-            <RecurringExpenseChart expenses={expenses} />
-          ) : (
-            <Calendar expenses={expenses} reminders={reminders} />
-          )}
-        </Box>
+        <ChartDisplaySection
+          expenses={optimisticExpenses}
+          reminders={reminders}
+        />
       </Stack>
     </Stack>
   );

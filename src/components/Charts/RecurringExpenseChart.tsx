@@ -17,6 +17,7 @@ import "@mantine/charts/styles.css";
 import { formatNumber } from "../../../utils/utilityFunctions";
 import { useMemo, useState } from "react";
 import { useViewportSize } from "@mantine/hooks";
+import { SlideDownWrapper } from "../common/SlideDownWrapper";
 
 interface ExpenseProp {
   expenses: RecurringExpense[] | null;
@@ -59,7 +60,7 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
   }, [expenses]);
 
   return (
-    <Stack className="w-full h-full p-3 transition-all">
+    <Stack className="w-full h-full p-3 transition-all" gap="0">
       <ResponsiveContainer width="auto" height={"100%"} minHeight={384}>
         <DonutChart
           h={384}
@@ -76,26 +77,13 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
           }}
         />
       </ResponsiveContainer>
-      <Flex style={{ transition: "all 1s ease-in-out" }}>
-        <Transition
-          mounted={showStatus === "show"}
-          transition="fade-down"
-          duration={400}
-          timingFunction="ease"
-        >
-          {(styles) => (
-            <Group
-              style={styles}
-              className="w-full px-4 pb-3"
-              justify="space-evenly"
-            >
-              {Object.entries(EXPENSE_MAP).map(([key, value]) => (
-                <LegendItem key={key} color={value} name={key} />
-              ))}
-            </Group>
-          )}
-        </Transition>
-      </Flex>
+      <SlideDownWrapper isOpen={showStatus === "show"}>
+        <Group className="w-full px-4 pb-3" justify="space-evenly">
+          {Object.entries(EXPENSE_MAP).map(([key, value]) => (
+            <LegendItem key={key} color={value} name={key} />
+          ))}
+        </Group>
+      </SlideDownWrapper>
       <Group justify="center">
         <SegmentedControl
           value={showStatus}

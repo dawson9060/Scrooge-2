@@ -78,7 +78,7 @@ const FormContent = () => {
         name="amount"
         className="w-1/2 pr-2 md:px-2 md:w-[150px]"
         hideControls
-        placeholder="Expense Amount"
+        placeholder="Amount"
       />
       <Select
         placeholder="Pick value"
@@ -154,6 +154,8 @@ const CountWrapper = ({
         end={number}
         style={{ minWidth: "65px" }}
         duration={duration}
+        enableScrollSpy
+        scrollSpyOnce
         formattingFn={(num) => "$" + num.toLocaleString()}
       />
     </Group>
@@ -161,16 +163,6 @@ const CountWrapper = ({
 };
 
 const ExpenseStats = ({ expenses }: ExpenseProps) => {
-  const [mounted, setMounted] = useState<boolean>(false);
-
-  const { ref, inViewport } = useInViewport();
-
-  useEffect(() => {
-    if (inViewport && !mounted) {
-      setMounted(true);
-    }
-  }, [inViewport, mounted]);
-
   const { totalExpenses, largestExpense } = useMemo(() => {
     let total = 0;
     let largest = 0;
@@ -191,27 +183,15 @@ const ExpenseStats = ({ expenses }: ExpenseProps) => {
   }, [expenses]);
 
   return (
-    <Group className="bg-white rounded-md w-full p-4" mih={60} ref={ref}>
-      <Transition
-        mounted={mounted}
-        transition="fade-right"
-        duration={700}
-        timingFunction="ease"
-      >
-        {(styles) => (
-          <Box
-            style={styles}
-            className="gap-2 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-4"
-          >
-            <CountWrapper number={totalExpenses} title="Total" duration={1} />
-            <CountWrapper
-              number={largestExpense}
-              title="Largest Expense"
-              duration={2}
-            />
-          </Box>
-        )}
-      </Transition>
+    <Group className="bg-white rounded-md w-full p-4" mih={60}>
+      <Box className="gap-2 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-4">
+        <CountWrapper number={totalExpenses} title="Total" duration={1} />
+        <CountWrapper
+          number={largestExpense}
+          title="Largest Expense"
+          duration={2}
+        />
+      </Box>
     </Group>
   );
 };

@@ -73,9 +73,10 @@ function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
                 ? [{ y: 700, label: "Allowance", color: "red.6" }]
                 : []
             }
-            series={[{ name: "expenses", color: "indigo.6" }]}
+            series={[{ name: "expenses", color: "gold" }]}
             valueFormatter={(value) => `$${formatNumber(value)}`}
             curveType="linear"
+            c="gold"
           />
         ) : (
           <Stack

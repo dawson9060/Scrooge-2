@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  Burger,
-  Drawer,
-  DrawerBody,
-  Group,
-  NavLink,
-  Text,
-} from "@mantine/core";
+import { Burger, Drawer, DrawerBody, Group, Text } from "@mantine/core";
 import { useViewportSize } from "@mantine/hooks";
-import { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,11 +9,9 @@ import { createClient } from "../../utils/supabase/client";
 import { UpdateBudgetModal } from "./Modals/UpdateBudgetModal";
 
 const Navbar = () => {
-  // const [createProfileOpened , { open: onCreateOpen, close: onCreateClose }] = useDisclosure(false);
-  // const [authOpened , { open: onAuthOpen, close: onAuthClose }] = useDisclosure(false);
-  // TODO - User does not need to be in state? Navbar will always have a logged in user
-  const [user, setUser] = useState<User>();
   const [opened, setOpened] = useState(false);
+  const [name, setName] = useState<string | undefined>();
+  const [budget, setBudget] = useState<number | undefined>();
 
   const { height, width } = useViewportSize();
 
@@ -30,13 +20,11 @@ const Navbar = () => {
   const getUser = async () => {
     const supabase = createClient();
 
-    const { data, error } = await supabase.auth.getUser();
+    const { data: userInfo } = await supabase.from("users").select();
 
-    if (error || !data?.user) {
-      console.log("error", error);
-    } else {
-      console.log("setting user", data.user);
-      setUser(data.user);
+    if (userInfo) {
+      setName(userInfo[0].full_name);
+      setBudget(userInfo[0].monthly_budget);
     }
   };
 
@@ -52,8 +40,6 @@ const Navbar = () => {
     router.push("/login");
   };
 
-  console.log("user in Navbar", user);
-
   return (
     <nav className="bg-white border-gray-200">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto py-4 px-6 md:px-10">
@@ -67,7 +53,7 @@ const Navbar = () => {
 
         {width > 450 ? (
           <Group gap="xl">
-            <UpdateBudgetModal />
+            <UpdateBudgetModal currentName={name} currentBudget={budget} />
             <Text
               className="hover:text-blue-500 hover:cursor-pointer"
               onClick={() => handleSignOut()}
@@ -86,7 +72,7 @@ const Navbar = () => {
         title="Actions"
       >
         <DrawerBody pt="lg">
-          <UpdateBudgetModal />
+          <UpdateBudgetModal currentName={name} currentBudget={budget} />
           <Text
             pt="md"
             className="hover:text-blue-500 hover:cursor-pointer"

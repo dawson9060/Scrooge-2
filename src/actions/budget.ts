@@ -4,7 +4,10 @@ import { User } from "@/types/app";
 import { createClient } from "../../utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-const updateUserBudget = async (budget: number) => {
+const updateUserDetails = async (
+  budget: number,
+  name: string | undefined | null
+) => {
   const supabase = createClient();
 
   if (!budget) {
@@ -20,7 +23,7 @@ const updateUserBudget = async (budget: number) => {
 
   const { error } = await supabase
     .from("users")
-    .update({ monthly_budget: budget })
+    .update({ monthly_budget: budget, full_name: name })
     .eq("id", authData.user.id);
 
   if (error) {
@@ -31,4 +34,4 @@ const updateUserBudget = async (budget: number) => {
   revalidatePath("/dashboard");
 };
 
-export default updateUserBudget;
+export default updateUserDetails;

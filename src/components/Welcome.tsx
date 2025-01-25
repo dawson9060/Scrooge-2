@@ -123,7 +123,7 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
         className="hover:pl-3 transition-all py-2 hover:cursor-pointer"
         onClick={open}
       >
-        <Text size="lg" c={upcomingCount > 0 ? "orange" : "black"}>
+        <Text size="lg" className={`${upcomingCount > 0 && "animate-bounce"}`}>
           You have {upcomingCount} upcoming reminders
         </Text>
       </Group>
@@ -136,7 +136,7 @@ export function Welcome({ user, reminders }: Props) {
     <Stack className="my-10" mih={80}>
       <Stack className="p-5 pb-3 rounded-lg shadow-md break-words" bg="#fabf1b">
         <Text size="30px" className="text-2xl">
-          {getTimeGreeting(user?.email)}
+          {getTimeGreeting(user.full_name ?? user?.email)}
         </Text>
         <ReminderDrawer reminders={reminders} />
       </Stack>
