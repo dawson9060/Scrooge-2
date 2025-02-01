@@ -76,14 +76,25 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
         <DrawerBody p={0}>
           {/* @ts-ignore */}
           <form ref={formRef} action={(data) => handleAdd(data)}>
-            <Group wrap="nowrap" className="w-full">
-              <TextInput w="100%" placeholder="Name" name="name" />
+            <Group
+              className="w-full flex flex-row flex-wrap sm:flex-nowrap"
+              justify="space-between"
+            >
+              <TextInput
+                // w="100%"
+                className="w-full sm:w-auto"
+                placeholder="Name"
+                name="name"
+                required
+              />
               <DateInput
                 clearable
-                miw={150}
-                w={150}
+                className="w-full sm:w-[170px] sm:min-w-[170px]"
+                // miw={150}
+                // w={150}
                 placeholder="Select a Date"
                 name="date"
+                required
               />
             </Group>
             <Button mt="sm" bg="gold" fw="normal" w="100%" type="submit">

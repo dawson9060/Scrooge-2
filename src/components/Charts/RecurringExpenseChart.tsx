@@ -88,6 +88,7 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
         <SegmentedControl
           value={showStatus}
           color="gold"
+          size="xs"
           data={[
             { label: "Show Legend", value: "show" },
             { label: "Hide Legend", value: "hide" },

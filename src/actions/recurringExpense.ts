@@ -8,7 +8,7 @@ export async function addRecurringExpense(formData: FormData) {
   const supabase = createClient();
 
   const expense = formData.get("expense") as string | null;
-  const amount = formData.get("amount") as number | null;
+  const amount = formData.get("amount") as string | null;
   const type = formData.get("type") as string | null;
   const day = formData.get("day") as string | null;
 
@@ -34,7 +34,7 @@ export async function addRecurringExpense(formData: FormData) {
 
   const { error } = await supabase.from("recurringExpenses").insert({
     expense_name: expense,
-    amount: amount,
+    amount: Number(amount.substring(1)),
     type,
     day,
     user_id: user.id,

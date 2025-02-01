@@ -32,6 +32,8 @@ import {
   getLastDayInMonth,
 } from "../../utils/utilityFunctions";
 import UniqueExpenseChart from "./Charts/UniqueExpenseCharts";
+import { SlideLeftWrapper } from "./common/SlideLeftWrapper";
+import { SlideDownWrapper } from "./common/SlideDownWrapper";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -71,11 +73,16 @@ const FormContent = () => {
     <Group gap={0}>
       <TextInput
         name="expense"
+        required
         className="w-full mb-2 md:mb-0 md:w-[250px]"
         placeholder="Expense Name"
       />
       <NumberInput
         name="amount"
+        required
+        min={1}
+        prefix="$"
+        clampBehavior="strict"
         className="w-1/2 pr-2 md:px-2 md:w-[150px]"
         hideControls
         placeholder="Amount"
@@ -186,11 +193,7 @@ const ExpenseStats = ({ expenses }: ExpenseProps) => {
     <Group className="bg-white rounded-md w-full p-4" mih={60}>
       <Box className="gap-2 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-4">
         <CountWrapper number={totalExpenses} title="Total" duration={1} />
-        <CountWrapper
-          number={largestExpense}
-          title="Largest Expense"
-          duration={2}
-        />
+        <CountWrapper number={largestExpense} title="Largest" duration={2} />
       </Box>
     </Group>
   );
@@ -203,6 +206,8 @@ const TransactionItem = ({
   expense: UniqueExpense;
   optimisticUpdate: ExpenseOptimisticUpdate;
 }) => {
+  const [visible, setVisible] = useState(false);
+
   const handleDelete = async () => {
     optimisticUpdate({ action: "delete", expense });
 
@@ -211,25 +216,28 @@ const TransactionItem = ({
 
   return (
     <Group
-      className="overflow-hidden shadow-md lg:w-[49%] w-full rounded-md bg-white px-3 py-2 relative transition-all"
+      className="w-full lg:w-[49%] overflow-hidden shadow-md p-2 rounded-md bg-white relative transition-all"
       justify="space-between"
+      wrap="nowrap"
     >
       <Box
         className="w-3 h-full absolute left-0 rounded-tl-md rounded-bl-md"
         bg={expense.type === "expense" ? "red" : "green"}
       />
-      <Text w="50%" pl={8}>
-        {expense.expense_name}
-      </Text>
-      <Text miw={50} w="15%">
-        ${expense.amount}
-      </Text>
-      <Text miw={65} w="15%">
-        {new Date(expense.created_at).toLocaleDateString()}
-      </Text>
-      <ActionIcon variant="transparent" color="black" size="25px">
-        <Trash2 onClick={() => handleDelete()} />
-      </ActionIcon>
+      <Group className="flex-wrap sm:flex-nowrap w-full ml-4">
+        <Text className="w-full sm:w-auto sm:flex-1">
+          {expense.expense_name}
+        </Text>
+        <Text className="w-[70px]">${expense.amount}</Text>
+        <Text className="w-[70px]">
+          {new Date(expense.created_at).toLocaleDateString()}
+        </Text>
+      </Group>
+      <Box className="h-full flex-col justify-center align-middle">
+        <ActionIcon variant="transparent" color="black" size="30px">
+          <Trash2 onClick={() => handleDelete()} />
+        </ActionIcon>
+      </Box>
     </Group>
   );
 };

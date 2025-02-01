@@ -8,7 +8,7 @@ export async function addUniqueExpense(formData: FormData) {
   const supabase = createClient();
 
   const expense = formData.get("expense") as string | null;
-  const amount = formData.get("amount") as number | null;
+  const amount = formData.get("amount") as string | null;
   const type = formData.get("type") as string | null;
 
   if (!expense) {
@@ -33,7 +33,7 @@ export async function addUniqueExpense(formData: FormData) {
 
   const { error } = await supabase.from("uniqueExpenses").insert({
     expense_name: expense,
-    amount: amount,
+    amount: Number(amount.substring(1)),
     user_id: user.id,
     type: type,
   });

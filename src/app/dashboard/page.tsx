@@ -38,7 +38,6 @@ export default async function Dashboard() {
     .from("reminders")
     .select()
     .order("date_timestamp", { ascending: true });
-  console.log("reminders", reminders);
 
   return (
     <>

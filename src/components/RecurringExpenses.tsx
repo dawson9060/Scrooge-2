@@ -82,10 +82,15 @@ const FormContent = () => {
         name="expense"
         placeholder="Expense Name&#42;"
         className="w-full md:w-[250px]"
+        required
       />
       <NumberInput
         name="amount"
+        min={1}
+        clampBehavior="strict"
+        prefix="$"
         placeholder="Amount&#42;"
+        required
         className="w-[50%] mt-2 pr-2 md:mt-0 md:pl-2 md:w-[150px]"
         hideControls
       />
@@ -94,6 +99,8 @@ const FormContent = () => {
         data={Array.from({ length: 31 }, (v, i) => String(i + 1))}
         allowDeselect={true}
         name="day"
+        searchable
+        clearable
         className="w-[50%] mt-2 md:mt-0 md:mr-2 md:w-[135px]"
       />
       <Select
@@ -129,7 +136,7 @@ const AddRecurringForm = ({
       created_at: "",
       user_id: "",
       day: "1",
-      amount: Number(data.get("amount")),
+      amount: Number(String(data.get("amount")).substring(1)),
       type: data.get("type") as string,
       expense_name: data.get("expense") as string,
     };
@@ -150,7 +157,7 @@ const AddRecurringForm = ({
           fw="normal"
           onClick={() => setShowForm(!showForm)}
         >
-          {showForm ? "Hide" : "Add Expense"}
+          {showForm ? "Hide" : "Add"}
         </Button>
       </Group>
       <SlideDownWrapper isOpen={showForm}>
@@ -221,7 +228,7 @@ const SummarySection = ({
   expenses,
   user,
 }: {
-  expenses: RecurringExpense[];
+  expenses: RecurringExpense[] | null;
   user: User;
 }) => {
   const [mounted, setMounted] = useState<boolean>(false);
@@ -277,7 +284,7 @@ const ChartDisplaySection = ({
   expenses,
   reminders,
 }: {
-  expenses: RecurringExpense[];
+  expenses: RecurringExpense[] | null;
   reminders: Reminder[] | null;
 }) => {
   const CHART = "chart";
@@ -334,7 +341,7 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
         className="bg-slate-100 rounded-md p-4 shadow-lg"
         align="flex-start"
       >
-        <SummarySection expenses={optimisticExpenses} user={user} />
+        <SummarySection expenses={expenses} user={user} />
         <Group
           w="100%"
           justify="space-between"
@@ -350,10 +357,7 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
             />
           ))}
         </Group>
-        <ChartDisplaySection
-          expenses={optimisticExpenses}
-          reminders={reminders}
-        />
+        <ChartDisplaySection expenses={expenses} reminders={reminders} />
       </Stack>
     </Stack>
   );
