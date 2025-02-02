@@ -54,9 +54,11 @@ const REMINDER = "reminder";
 
 const AddReminderModal = ({ date, opened, open, close }: AddReminderProps) => {
   const handleSave = async (data: FormData) => {
-    close();
+    if (data.get("name") !== "") {
+      close();
 
-    await addReminder(data);
+      await addReminder(data);
+    }
   };
 
   return (
@@ -156,8 +158,6 @@ const Calendar = ({
       };
     });
   }, [expenses]);
-
-  console.log("MAPPED EXPENSES", mappedExpenses);
 
   const mappedReminders = useMemo(() => {
     return reminders?.map((reminder) => {

@@ -206,8 +206,6 @@ const TransactionItem = ({
   expense: UniqueExpense;
   optimisticUpdate: ExpenseOptimisticUpdate;
 }) => {
-  const [visible, setVisible] = useState(false);
-
   const handleDelete = async () => {
     optimisticUpdate({ action: "delete", expense });
 
