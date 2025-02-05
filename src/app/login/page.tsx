@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <section style={{ overflowY: "hidden" }}>
+    <section>
       <Stack
         className="w-screen h-screen overflow-hidden"
         justify="center"
