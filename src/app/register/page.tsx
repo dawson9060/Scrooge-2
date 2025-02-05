@@ -30,6 +30,7 @@ export default function RegisterPage() {
         message: "Please check your email to confirm your account",
         position: "top-right",
         color: "green",
+        autoClose: 8000,
       });
 
       router.push("/login");
@@ -37,7 +38,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <section style={{ overflowY: "hidden" }}>
+    <section>
       <Stack
         className="w-screen h-screen overflow-hidden"
         justify="center"
@@ -45,7 +46,7 @@ export default function RegisterPage() {
       >
         <form>
           <Stack className="w-80 p-5 rounded-md shadow-md bg-white">
-            <Text size="25px" my="sm" c="#fabf1b" className="text-center">
+            <Text size="25px" my="sm" c="gold" className="text-center">
               Scrooge
             </Text>
             <TextInput

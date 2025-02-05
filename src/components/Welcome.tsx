@@ -81,7 +81,6 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
               justify="space-between"
             >
               <TextInput
-                // w="100%"
                 className="w-full sm:w-auto"
                 placeholder="Name"
                 name="name"
@@ -90,8 +89,6 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
               <DateInput
                 clearable
                 className="w-full sm:w-[170px] sm:min-w-[170px]"
-                // miw={150}
-                // w={150}
                 placeholder="Select a Date"
                 name="date"
                 required
@@ -143,13 +140,12 @@ const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
 };
 
 export function Welcome({ user, reminders }: Props) {
-  console.log("USER", user);
   return (
     <Stack className="my-10" mih={80}>
       <Stack className="p-5 pb-3 rounded-lg shadow-md break-words" bg="#fabf1b">
         <Text size="30px" className="text-2xl">
           {getTimeGreeting(
-            user && user.full_name != "" ? user.full_name : user.email
+            user && user.full_name ? user.full_name : user.email
           )}
         </Text>
         <ReminderDrawer reminders={reminders} />
