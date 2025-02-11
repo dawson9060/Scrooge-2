@@ -8,6 +8,7 @@ import RecurringExpenses from "@/components/RecurringExpenses";
 import UniqueExpenses from "@/components/UniqueExpenses";
 import Welcome from "@/components/Welcome";
 import { createClient } from "../../../utils/supabase/server";
+import { Suspense } from "react";
 
 export default async function Dashboard() {
   const supabase = createClient();

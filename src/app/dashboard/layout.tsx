@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import { Group, Text } from "@mantine/core";
+import { Suspense } from "react";
 
 export default function DashboardLayout({
   children,
@@ -9,7 +10,7 @@ export default function DashboardLayout({
   return (
     <>
       <Navbar />
-      {children}
+      <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
       <Group
         bg="gold"
         className="min-w-full font-normal py-3 mt-10"
