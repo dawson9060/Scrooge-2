@@ -9,6 +9,7 @@ import UniqueExpenses from "@/components/UniqueExpenses";
 import Welcome from "@/components/Welcome";
 import { createClient } from "../../../utils/supabase/server";
 import { Suspense } from "react";
+import { Reminders } from "@/components/Reminders";
 
 export default async function Dashboard() {
   const supabase = createClient();
@@ -55,6 +56,7 @@ export default async function Dashboard() {
             reminders={reminders}
           />
           <UniqueExpenses expenses={uniqueExpenses} />
+          <Reminders reminders={reminders} />
         </Stack>
       )}
     </>

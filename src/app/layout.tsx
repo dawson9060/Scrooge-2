@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "@mantine/notifications/styles.css";
 import { Notifications } from "@mantine/notifications";
+import { Provider } from "jotai";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +39,9 @@ export default function RootLayout({
       <body style={{ height: "100vh" }}>
         <MantineProvider theme={theme}>
           <Notifications />
-          <Stack className="min-h-screen">{children}</Stack>
+          <Provider>
+            <Stack className="min-h-screen">{children}</Stack>
+          </Provider>
         </MantineProvider>
       </body>
     </html>

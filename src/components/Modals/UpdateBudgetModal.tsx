@@ -49,7 +49,7 @@ export const UpdateBudgetModal = ({
         onClick={handlers.open}
         className="hover:cursor-pointer hover:text-blue-600"
       >
-        Update Info
+        Update Budget
       </Text>
       <Modal opened={opened} onClose={handlers.close} title="Update User Info">
         <TextInput
@@ -76,7 +76,7 @@ export const UpdateBudgetModal = ({
           <Button bg="gray" onClick={handlers.close}>
             Close
           </Button>
-          <Button bg="orange" onClick={handleUpdateBudget}>
+          <Button bg="gold" onClick={handleUpdateBudget}>
             Submit
           </Button>
         </Group>

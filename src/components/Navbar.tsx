@@ -7,11 +7,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 import { UpdateBudgetModal } from "./Modals/UpdateBudgetModal";
+import { useSetAtom } from "jotai";
+import { showRemindersAtom } from "@/atoms/dashboard-atoms";
 
 const Navbar = () => {
   const [opened, setOpened] = useState(false);
   const [name, setName] = useState<string | undefined>();
   const [budget, setBudget] = useState<number | undefined>();
+
+  const setOpenReminders = useSetAtom(showRemindersAtom);
 
   const { height, width } = useViewportSize();
 
@@ -51,9 +55,15 @@ const Navbar = () => {
           Scrooge
         </Link>
 
-        {width > 450 ? (
+        {width > 550 ? (
           <Group gap="xl">
             <UpdateBudgetModal currentName={name} currentBudget={budget} />
+            <Text
+              className="hover:text-blue-500 hover:cursor-pointer"
+              onClick={() => setOpenReminders(true)}
+            >
+              Reminders
+            </Text>
             <Text
               className="hover:text-blue-500 hover:cursor-pointer"
               onClick={() => handleSignOut()}
@@ -73,6 +83,13 @@ const Navbar = () => {
       >
         <DrawerBody pt="lg">
           <UpdateBudgetModal currentName={name} currentBudget={budget} />
+          <Text
+            pt="md"
+            className="hover:text-blue-500 hover:cursor-pointer"
+            onClick={() => setOpenReminders(true)}
+          >
+            Reminders
+          </Text>
           <Text
             pt="md"
             className="hover:text-blue-500 hover:cursor-pointer"

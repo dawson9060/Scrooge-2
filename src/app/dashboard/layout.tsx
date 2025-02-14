@@ -17,7 +17,7 @@ export default function DashboardLayout({
         justify="center"
       >
         <Text fw="normal" c="black">
-          Scrooge 2024
+          Scrooge {new Date().getFullYear()} ©
         </Text>
       </Group>
     </>

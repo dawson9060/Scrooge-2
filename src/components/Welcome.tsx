@@ -1,23 +1,10 @@
 "use client";
 
-import { addReminder, deleteReminder } from "@/actions/reminders";
+import { showRemindersAtom } from "@/atoms/dashboard-atoms";
 import { RecurringExpense, Reminder, User } from "@/types/app";
-import {
-  ActionIcon,
-  Box,
-  Button,
-  Divider,
-  Drawer,
-  DrawerBody,
-  Group,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
-import { DateInput } from "@mantine/dates";
-import { useDisclosure } from "@mantine/hooks";
-import { Trash2 } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { Group, Stack, Text } from "@mantine/core";
+import { useSetAtom } from "jotai";
+import { useMemo } from "react";
 import { getTimeGreeting } from "../../utils/utilityFunctions";
 
 interface Props {
@@ -26,120 +13,27 @@ interface Props {
   reminders: Reminder[] | null;
 }
 
-const ReminderDrawer = ({ reminders }: { reminders: Reminder[] | null }) => {
-  const [opened, { open, close }] = useDisclosure(false);
+export function Welcome({ user, reminders }: Props) {
+  const setOpen = useSetAtom(showRemindersAtom);
 
-  const formRef = useRef();
-
-  const { upcomingCount, formattedReminders } = useMemo(() => {
+  const upcomingCount = useMemo(() => {
     let count = 0;
 
     const today = new Date().getTime();
     const weekInMilli = 604800000;
 
-    const mapped = reminders?.map((reminder) => {
-      const newReminder = { ...reminder };
-
+    reminders?.forEach((reminder) => {
       if (
         reminder.date_timestamp >= today &&
         reminder.date_timestamp - today <= weekInMilli
       ) {
         count++;
-        //@ts-ignore
-        newReminder.isUpcoming = true;
       }
-
-      return newReminder;
     });
 
-    return { upcomingCount: count, formattedReminders: mapped };
+    return count;
   }, [reminders]);
 
-  const handleAdd = async (formData: FormData) => {
-    const date = formData.get("date") as string;
-
-    formData.set("date", date.substring(0, 10));
-
-    await addReminder(formData);
-
-    //@ts-ignore
-    formRef?.current?.reset();
-  };
-
-  const handleDelete = async (id: number) => {
-    await deleteReminder(id);
-  };
-
-  return (
-    <>
-      <Drawer opened={opened} onClose={close} title="Reminders" maw="100vw">
-        <DrawerBody p={0}>
-          {/* @ts-ignore */}
-          <form ref={formRef} action={(data) => handleAdd(data)}>
-            <Group
-              className="w-full flex flex-row flex-wrap sm:flex-nowrap"
-              justify="space-between"
-            >
-              <TextInput
-                className="w-full sm:w-auto"
-                placeholder="Name"
-                name="name"
-                required
-              />
-              <DateInput
-                clearable
-                className="w-full sm:w-[170px] sm:min-w-[170px]"
-                placeholder="Select a Date"
-                name="date"
-                required
-              />
-            </Group>
-            <Button mt="sm" bg="gold" fw="normal" w="100%" type="submit">
-              Add Reminder
-            </Button>
-          </form>
-          <Divider my="lg" />
-          <Stack className="w-full h-full overflow-y-auto gap-3 pb-2">
-            {formattedReminders?.map((reminder) => (
-              <Group
-                key={reminder.id}
-                wrap="nowrap"
-                className="relative bg-slate-100 rounded-lg p-4 shadow-md"
-              >
-                {/* @ts-ignore */}
-                {reminder.isUpcoming && (
-                  <Box
-                    className="w-3 h-full absolute left-0 rounded-tl-md rounded-bl-md"
-                    bg="orange"
-                  />
-                )}
-                <Text ml="sm" w="100%">
-                  {reminder.name}
-                </Text>
-                <Text w={95}>{reminder.date}</Text>
-                <ActionIcon variant="subtle" color="black" size="30px">
-                  <Trash2 onClick={() => handleDelete(reminder.id)} />
-                </ActionIcon>
-              </Group>
-            ))}
-          </Stack>
-        </DrawerBody>
-      </Drawer>
-
-      <Group
-        w="fit-content"
-        className="hover:pl-3 transition-all py-2 hover:cursor-pointer"
-        onClick={open}
-      >
-        <Text size="lg" className={`${upcomingCount > 0 && "animate-bounce"}`}>
-          You have {upcomingCount} upcoming reminders
-        </Text>
-      </Group>
-    </>
-  );
-};
-
-export function Welcome({ user, reminders }: Props) {
   return (
     <Stack className="my-10" mih={80}>
       <Stack className="p-5 pb-3 rounded-lg shadow-md break-words" bg="#fabf1b">
@@ -148,7 +42,18 @@ export function Welcome({ user, reminders }: Props) {
             user && user.full_name ? user.full_name : user.email
           )}
         </Text>
-        <ReminderDrawer reminders={reminders} />
+        <Group
+          w="fit-content"
+          className="hover:pl-3 transition-all py-2 hover:cursor-pointer"
+          onClick={() => setOpen(true)}
+        >
+          <Text
+            size="lg"
+            className={`${upcomingCount > 0 && "animate-bounce"}`}
+          >
+            You have {upcomingCount} upcoming reminders
+          </Text>
+        </Group>
       </Stack>
     </Stack>
   );
