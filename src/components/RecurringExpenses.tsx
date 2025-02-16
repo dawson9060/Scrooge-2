@@ -32,6 +32,8 @@ import RecurringExpenseChart from "./Charts/RecurringExpenseChart";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import { SlideDownWrapper } from "./common/SlideDownWrapper";
+import { useSetAtom } from "jotai";
+import { surplusAtom } from "@/atoms/dashboard-atoms";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -233,7 +235,7 @@ const SummarySection = ({
 }) => {
   const [mounted, setMounted] = useState<boolean>(false);
 
-  useEffect(() => setMounted(true), []);
+  const setSurplus = useSetAtom(surplusAtom);
 
   const { total, surplus } = useMemo(() => {
     let total = 0;
@@ -241,6 +243,9 @@ const SummarySection = ({
 
     return { total, surplus: user.monthly_budget - total };
   }, [expenses, user]);
+
+  useEffect(() => setMounted(true), []);
+  useEffect(() => setSurplus(surplus), [surplus]);
 
   return (
     <Group className="bg-white rounded-md w-full p-4" mih={60}>

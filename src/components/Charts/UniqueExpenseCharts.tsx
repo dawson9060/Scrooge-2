@@ -9,6 +9,8 @@ import {
   formatNumber,
   getAllDaysInRange,
 } from "../../../utils/utilityFunctions";
+import { useAtomValue } from "jotai";
+import { surplusAtom } from "@/atoms/dashboard-atoms";
 
 interface ExpenseProp {
   expenses: UniqueExpense[];
@@ -45,6 +47,8 @@ function createChartData(expenses: UniqueExpense[]) {
 }
 
 function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
+  const suprlus = useAtomValue(surplusAtom);
+
   const chartData = useMemo(() => {
     return createChartData(expenses);
   }, [expenses]);
@@ -70,7 +74,7 @@ function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
             areaProps={{ isAnimationActive: true, animationDuration: 6000 }}
             referenceLines={
               isSingleMonth
-                ? [{ y: 700, label: "Allowance", color: "red.6" }]
+                ? [{ y: suprlus, label: "Surplus", color: "red.6" }]
                 : []
             }
             series={[{ name: "expenses", color: "gold" }]}
