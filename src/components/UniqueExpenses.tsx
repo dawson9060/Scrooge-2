@@ -95,6 +95,7 @@ const FormContent = ({ form }: any) => {
         placeholder="Pick value"
         data={["expense", "deposit"]}
         className="w-1/2 md:w-[160px]"
+        searchable
       />
       <Box className="w-full mt-2 md:pt-0 md:ml-2 md:mt-0 md:w-fit">
         <Button bg="gold" type="submit" fullWidth loading={pending}>

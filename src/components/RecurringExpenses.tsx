@@ -124,6 +124,8 @@ const MantineFormContent = ({ form }: any) => {
         data={Object.keys(EXPENSE_MAP)}
         defaultValue={EXPENSE_UTILITY}
         allowDeselect={false}
+        // TODO - THIS SHOULD NOT NEED TO BE SEARCHABLE TO WORK
+        searchable
         className="w-full mt-2 md:mt-0 md:w-[160px]"
       />
       <Box className="md:ml-2 w-full md:w-fit mt-2 md:mt-0">
