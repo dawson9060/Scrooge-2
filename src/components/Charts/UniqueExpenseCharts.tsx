@@ -54,8 +54,8 @@ function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
   }, [expenses]);
 
   const isSingleMonth = selectedRange[1] === null;
-  console.log("SELECTED RANGE", selectedRange);
-  console.log("isSIngleMonth", isSingleMonth);
+  // console.log("SELECTED RANGE", selectedRange);
+  // console.log("isSIngleMonth", isSingleMonth);
   // console.log('chart data', chartData);
 
   return (
@@ -66,8 +66,6 @@ function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
             h={"384px"}
             bg="white"
             p="md"
-            // xAxisLabel="Date"
-            // yAxisLabel="Cumulative Total"
             style={{ borderRadius: "12px" }}
             data={chartData ?? []}
             dataKey="date"

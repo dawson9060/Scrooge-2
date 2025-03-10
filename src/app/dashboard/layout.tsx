@@ -1,5 +1,5 @@
 import Navbar from "@/components/Navbar";
-import { Group, Text } from "@mantine/core";
+import { Group, Stack, Text } from "@mantine/core";
 import { Suspense } from "react";
 
 export default function DashboardLayout({
@@ -8,7 +8,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <Stack gap={0}>
       <Navbar />
       <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
       <Group
@@ -20,6 +20,6 @@ export default function DashboardLayout({
           Scrooge {new Date().getFullYear()} ©
         </Text>
       </Group>
-    </>
+    </Stack>
   );
 }

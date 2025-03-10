@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "../../utils/supabase/server";
 import { RecurringExpense } from "@/types/app";
 
-export async function addRecurringExpense(formData: FormData) {
+export async function addRecurringExpense(data: RecurringExpense) {
   const supabase = createClient();
 
-  const expense = formData.get("expense") as string | null;
-  const amount = formData.get("amount") as string | null;
-  const type = formData.get("type") as string | null;
-  const day = formData.get("day") as string | null;
+  const expense = data.expense_name as string | null;
+  const amount = data.amount as string | null;
+  const type = data.type as string | null;
+  const day = data.day as string | null;
 
   if (!expense) {
     throw new Error("Expense name is required");
@@ -34,7 +34,7 @@ export async function addRecurringExpense(formData: FormData) {
 
   const { error } = await supabase.from("recurringExpenses").insert({
     expense_name: expense,
-    amount: Number(amount.substring(1)),
+    amount: Number(amount),
     type,
     day,
     user_id: user.id,

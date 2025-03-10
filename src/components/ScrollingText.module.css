@@ -1,0 +1,47 @@
+.scroll {
+  max-width: 1280px;
+  border: 2px solid var(--mantine-color-gold-5);
+}
+
+.scroll[data-animated="true"] {
+  overflow: hidden;
+  mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+  -webkit-mask: linear-gradient(
+    90deg,
+    transparent,
+    white 20%,
+    white 80%,
+    transparent
+  );
+}
+
+.scroll[data-animated="true"] .tagList {
+  width: fit-content;
+  flex-wrap: nowrap;
+  animation: scroll 30s linear infinite;
+}
+
+.tagList {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: nowrap;
+  margin: 0;
+  padding-inline: 0;
+  list-style: none;
+}
+
+.tagList div {
+  color: var(--mantine-color-gold-5);
+  padding: 0.25rem 0.5rem;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+}
+
+@keyframes scroll {
+  to {
+    transform: translate(calc(-50% - 2rem));
+  }
+
+  from {
+  }
+}

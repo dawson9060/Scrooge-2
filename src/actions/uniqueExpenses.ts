@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "../../utils/supabase/server";
 import { UniqueExpense } from "@/types/app";
 
-export async function addUniqueExpense(formData: FormData) {
+export async function addUniqueExpense(data: any) {
   const supabase = createClient();
 
-  const expense = formData.get("expense") as string | null;
-  const amount = formData.get("amount") as string | null;
-  const type = formData.get("type") as string | null;
+  const expense = data.expense as string | null;
+  const amount = data.amount as string | null;
+  const type = data.type as string | null;
 
   if (!expense) {
     throw new Error("Expense name is required");
@@ -33,7 +33,7 @@ export async function addUniqueExpense(formData: FormData) {
 
   const { error } = await supabase.from("uniqueExpenses").insert({
     expense_name: expense,
-    amount: Number(amount.substring(1)),
+    amount: Number(amount),
     user_id: user.id,
     type: type,
   });

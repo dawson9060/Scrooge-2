@@ -5,11 +5,11 @@ import { redirect } from "next/navigation";
 import { Stack } from "@mantine/core";
 
 import RecurringExpenses from "@/components/RecurringExpenses";
+import { Reminders } from "@/components/Reminders";
+import { ScrollingText } from "@/components/ScrollingText";
 import UniqueExpenses from "@/components/UniqueExpenses";
 import Welcome from "@/components/Welcome";
 import { createClient } from "../../../utils/supabase/server";
-import { Suspense } from "react";
-import { Reminders } from "@/components/Reminders";
 
 export default async function Dashboard() {
   const supabase = createClient();
@@ -45,6 +45,7 @@ export default async function Dashboard() {
     <>
       {userInfo && (
         <Stack className="max-w-screen-xl min-h-screen overflow-x-hidden w-full mx-auto px-6 md:px-10">
+          <ScrollingText />
           <Welcome
             user={userInfo[0]}
             expenses={recurringExpenses}

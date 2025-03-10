@@ -34,6 +34,10 @@ import { AnimatePresence } from "motion/react";
 import { SlideDownWrapper } from "./common/SlideDownWrapper";
 import { useSetAtom } from "jotai";
 import { surplusAtom } from "@/atoms/dashboard-atoms";
+import { any, z } from "zod";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm as useMantineForm } from "@mantine/form";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -75,18 +79,22 @@ const recurringReducer = (
   }
 };
 
-const FormContent = () => {
+const MantineFormContent = ({ form }: any) => {
   const { pending } = useFormStatus();
 
   return (
     <Group gap={0}>
       <TextInput
         name="expense"
+        key={form.key("expense_name")}
+        {...form.getInputProps("expense_name")}
         placeholder="Expense Name&#42;"
         className="w-full md:w-[250px]"
         required
       />
       <NumberInput
+        key={form.key("amount")}
+        {...form.getInputProps("amount")}
         name="amount"
         min={1}
         clampBehavior="strict"
@@ -97,20 +105,25 @@ const FormContent = () => {
         hideControls
       />
       <Select
+        key={form.key("day")}
+        {...form.getInputProps("day")}
+        name="day"
         placeholder="Day"
         data={Array.from({ length: 31 }, (v, i) => String(i + 1))}
         allowDeselect={true}
-        name="day"
+        defaultValue={null}
         searchable
         clearable
         className="w-[50%] mt-2 md:mt-0 md:mr-2 md:w-[135px]"
       />
       <Select
+        name="type"
+        key={form.key("type")}
+        {...form.getInputProps("type")}
         placeholder="Pick value"
         data={Object.keys(EXPENSE_MAP)}
         defaultValue={EXPENSE_UTILITY}
         allowDeselect={false}
-        name="type"
         className="w-full mt-2 md:mt-0 md:w-[160px]"
       />
       <Box className="md:ml-2 w-full md:w-fit mt-2 md:mt-0">
@@ -129,25 +142,37 @@ const AddRecurringForm = ({
 }) => {
   const [showForm, setShowForm] = useState<boolean>(false);
 
-  const formRef = useRef<HTMLFormElement>(null);
+  const form = useMantineForm({
+    mode: "uncontrolled",
+    initialValues: {
+      expense_name: "",
+      amount: null,
+      day: "",
+      type: EXPENSE_UTILITY,
+    },
 
-  const handleAddExpense = async (data: FormData) => {
+    // validate: {
+    //   email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+    // },
+  });
+
+  const handleAddExpense = async (data: any) => {
     // add fake data temporarily
     const newExpense: RecurringExpense = {
       id: -1,
       created_at: "",
       user_id: "",
       day: "1",
-      amount: Number(String(data.get("amount")).substring(1)),
-      type: data.get("type") as string,
-      expense_name: data.get("expense") as string,
+      amount: Number(String(data.amount).substring(1)),
+      type: data.type as string,
+      expense_name: data.expense as string,
     };
 
     optimisticUpdate({ action: "create", expense: newExpense });
 
     await addRecurringExpense(data);
 
-    formRef.current?.reset();
+    form.reset();
   };
 
   return (
@@ -163,8 +188,8 @@ const AddRecurringForm = ({
         </Button>
       </Group>
       <SlideDownWrapper isOpen={showForm}>
-        <form ref={formRef} action={(data) => handleAddExpense(data)}>
-          <FormContent />
+        <form onSubmit={form.onSubmit(handleAddExpense)}>
+          <MantineFormContent form={form} />
         </form>
       </SlideDownWrapper>
     </>

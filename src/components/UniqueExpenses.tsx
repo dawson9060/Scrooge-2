@@ -16,14 +16,13 @@ import {
   Stack,
   Text,
   TextInput,
-  Transition,
 } from "@mantine/core";
 import { MonthPicker } from "@mantine/dates";
 import "@mantine/dates/styles.css";
-import { useInViewport } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
 import { IconCirclePlus, IconDownload } from "@tabler/icons-react";
 import { Trash2 } from "lucide-react";
-import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
+import { useMemo, useOptimistic, useState } from "react";
 import CountUp from "react-countup";
 import { useFormStatus } from "react-dom";
 import { jsonToCSV } from "react-papaparse";
@@ -32,8 +31,6 @@ import {
   getLastDayInMonth,
 } from "../../utils/utilityFunctions";
 import UniqueExpenseChart from "./Charts/UniqueExpenseCharts";
-import { SlideLeftWrapper } from "./common/SlideLeftWrapper";
-import { SlideDownWrapper } from "./common/SlideDownWrapper";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -66,18 +63,22 @@ export const uniqueReducer = (
   }
 };
 
-const FormContent = () => {
+const FormContent = ({ form }: any) => {
   const { pending } = useFormStatus();
 
   return (
     <Group gap={0}>
       <TextInput
+        key={form.key("expense")}
+        {...form.getInputProps("expense")}
         name="expense"
         required
         className="w-full mb-2 md:mb-0 md:w-[250px]"
         placeholder="Expense Name"
       />
       <NumberInput
+        key={form.key("amount")}
+        {...form.getInputProps("amount")}
         name="amount"
         required
         min={1}
@@ -88,11 +89,11 @@ const FormContent = () => {
         placeholder="Amount"
       />
       <Select
+        key={form.key("type")}
+        {...form.getInputProps("type", { type: "select" })}
+        name="type"
         placeholder="Pick value"
         data={["expense", "deposit"]}
-        defaultValue={"expense"}
-        allowDeselect={false}
-        name="type"
         className="w-1/2 md:w-[160px]"
       />
       <Box className="w-full mt-2 md:pt-0 md:ml-2 md:mt-0 md:w-fit">
@@ -109,30 +110,40 @@ const AddForm = ({
 }: {
   optimisticUpdate: ExpenseOptimisticUpdate;
 }) => {
-  const formRef = useRef<HTMLFormElement>(null);
+  const form = useForm({
+    mode: "uncontrolled",
+    initialValues: {
+      expense: "",
+      amount: null,
+      type: "expense",
+    },
 
-  const handleAddExpense = async (data: FormData) => {
-    console.log("adding expense", data);
+    // validate: {
+    //   email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+    // },
+  });
+
+  const handleAddExpense = async (data: any) => {
     const newExpense: UniqueExpense = {
       id: -1,
       created_at: "",
       user_id: "",
-      type: (data.get("type") as string) ?? "Utility",
-      amount: Number(data.get("amount") ?? 0),
-      expense_name: data.get("expense") as string,
+      type: data.type,
+      amount: Number(data.amount ?? 0),
+      expense_name: data.expense,
     };
 
     optimisticUpdate({ action: "create", expense: newExpense });
 
     await addUniqueExpense(data);
 
-    formRef.current?.reset();
+    form.reset();
   };
 
   return (
     <Box>
-      <form ref={formRef} action={(data) => handleAddExpense(data)}>
-        <FormContent />
+      <form onSubmit={form.onSubmit(handleAddExpense)}>
+        <FormContent form={form} />
       </form>
     </Box>
   );
@@ -290,8 +301,6 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
     // TODO - remove these after we're sure this all works
     const startMilli = start.getTime();
     const endMilli = end.getTime();
-    console.log("start", start);
-    console.log("end", end);
 
     return expenses?.filter((expense) => {
       const creationMilli = new Date(expense.created_at).getTime();
@@ -299,11 +308,8 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
     });
   }, [expenses, selectedRange]);
 
-  console.log("expenses in range", expensesInRange);
-
   // TODO - MOVE THIS INTO DATE PICKER COMPONENT
   const handleSelect = (range: [Date, Date]) => {
-    console.log("val", range);
     if (!range[0]) {
       setSelectedRange([new Date(), null]);
     } else {
@@ -337,7 +343,6 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
     }
   };
 
-  console.log("selected range", selectedRange);
   return (
     <Stack mt={60}>
       <Group className="w-full" justify="space-between">
