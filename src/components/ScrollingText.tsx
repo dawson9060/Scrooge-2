@@ -3,26 +3,14 @@
 import { Box, Group, Text } from "@mantine/core";
 
 import classes from "./ScrollingText.module.css";
-import { useEffect } from "react";
 
 export const ScrollingText = () => {
   const scroogeSayings = [
-    "You know what's good for wallet and waist? Eating 1 meal a day, tops",
-    "That last purchase of yours? Probably unecessary",
+    "You don't really need three meals a day. Or two",
+    "These sayings may seem unnecessary, but so was your last purchase",
     "Fun is temporary, money is eternal",
+    "Chase your dreams, but not with my money",
   ];
-
-  //   useEffect(() => {
-  //     if (typeof document !== "undefined") {
-  //       const scrollers = document.querySelectorAll(".scroll");
-
-  //       if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-  //         scrollers.forEach((scroller) => {
-  //           scroller.setAttribute("data-animated", "true");
-  //         });
-  //       }
-  //     }
-  //   }, []);
 
   return (
     <Group w="100%" data-animated="true" className={`scroll ${classes.scroll}`}>
