@@ -1,14 +1,14 @@
 "use client";
 
+import { showRemindersAtom } from "@/atoms/dashboard-atoms";
 import { Burger, Drawer, DrawerBody, Group, Text } from "@mantine/core";
 import { useViewportSize } from "@mantine/hooks";
+import { useSetAtom } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
-import { UpdateBudgetModal } from "./Modals/UpdateBudgetModal";
-import { useSetAtom } from "jotai";
-import { showRemindersAtom } from "@/atoms/dashboard-atoms";
+import { UpdatePreferencesModal } from "./Modals/UpdateBudgetModal";
 
 const Navbar = () => {
   const [opened, setOpened] = useState(false);
@@ -57,7 +57,7 @@ const Navbar = () => {
 
         {width > 550 ? (
           <Group gap="xl">
-            <UpdateBudgetModal currentName={name} currentBudget={budget} />
+            <UpdatePreferencesModal currentName={name} currentBudget={budget} />
             <Text
               className="hover:text-blue-500 hover:cursor-pointer"
               onClick={() => setOpenReminders(true)}
@@ -82,7 +82,7 @@ const Navbar = () => {
         title="Actions"
       >
         <DrawerBody pt="lg">
-          <UpdateBudgetModal currentName={name} currentBudget={budget} />
+          <UpdatePreferencesModal currentName={name} currentBudget={budget} />
           <Text
             pt="md"
             className="hover:text-blue-500 hover:cursor-pointer"

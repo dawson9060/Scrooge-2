@@ -4,10 +4,7 @@ import { User } from "@/types/app";
 import { createClient } from "../../utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-const updateUserDetails = async (
-  budget: number,
-  name: string | undefined | null
-) => {
+const updateBudget = async (budget: number) => {
   const supabase = createClient();
 
   if (!budget) {
@@ -23,7 +20,7 @@ const updateUserDetails = async (
 
   const { error } = await supabase
     .from("users")
-    .update({ monthly_budget: budget, full_name: name })
+    .update({ monthly_budget: budget })
     .eq("id", authData.user.id);
 
   if (error) {
@@ -34,4 +31,27 @@ const updateUserDetails = async (
   revalidatePath("/dashboard");
 };
 
-export default updateUserDetails;
+const updateUserDetails = async (name: string | undefined | null) => {
+  const supabase = createClient();
+
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+
+  if (!authData.user) {
+    console.log("no user data found");
+    return null;
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({ full_name: name })
+    .eq("id", authData.user.id);
+
+  if (error) {
+    console.log("error updating user budget", error);
+    return null;
+  }
+
+  revalidatePath("/dashboard");
+};
+
+export { updateBudget, updateUserDetails };

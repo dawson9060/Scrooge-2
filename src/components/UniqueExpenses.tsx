@@ -238,7 +238,12 @@ const TransactionItem = ({
         <Text className="w-full sm:w-auto sm:flex-1">
           {expense.expense_name}
         </Text>
-        <Text className="w-[70px]">${expense.amount}</Text>
+        <Text
+          className="w-[70px]"
+          c={expense.type === "expense" ? "red" : "green"}
+        >
+          ${expense.amount}
+        </Text>
         <Text className="w-[70px]">
           {new Date(expense.created_at).toLocaleDateString()}
         </Text>
@@ -345,9 +350,9 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
   };
 
   return (
-    <Stack mt={60}>
+    <Stack>
       <Group className="w-full" justify="space-between">
-        <Text size="1.75rem">Unique Expenses</Text>
+        <Text size="1.5rem">Unique Expenses</Text>
         <Group gap="md">
           <DatePickerPopover
             // @ts-ignore

@@ -26,6 +26,7 @@ import {
   getFirstDayInMonth,
 } from "../../utils/utilityFunctions";
 
+import "./calendar.css";
 interface AddReminderProps {
   date: string | undefined;
   opened: boolean;
@@ -199,7 +200,7 @@ const Calendar = ({
   };
 
   return (
-    <Box w="100%" p="lg">
+    <Stack w="100%" p="lg">
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
@@ -212,6 +213,7 @@ const Calendar = ({
         dateClick={handleDateClick}
         eventClick={handleEventClick}
         events={activeData}
+        editable={true}
       />
       <AddReminderModal
         date={selectedDate}
@@ -226,7 +228,7 @@ const Calendar = ({
         open={viewOpen}
         close={viewClose}
       />
-    </Box>
+    </Stack>
   );
 };
 

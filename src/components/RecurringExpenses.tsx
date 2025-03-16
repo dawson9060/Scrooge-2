@@ -1,9 +1,11 @@
 "use client";
 
+import { updateBudget } from "@/actions/budget";
 import {
   addRecurringExpense,
   deleteRecurringExpense,
 } from "@/actions/recurringExpense";
+import { surplusAtom } from "@/atoms/dashboard-atoms";
 import { EXPENSE_MAP, EXPENSE_UTILITY } from "@/enums/ExpenseTypes";
 import { RecurringExpense, Reminder, User } from "@/types/app";
 import {
@@ -11,6 +13,7 @@ import {
   Box,
   Button,
   Group,
+  Modal,
   NumberInput,
   Select,
   Stack,
@@ -18,26 +21,22 @@ import {
   TextInput,
   Transition,
 } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
+import { useForm as useMantineForm } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
 import {
   IconCalendarWeek,
   IconChartPie3,
   IconCirclePlus,
 } from "@tabler/icons-react";
+import { useSetAtom } from "jotai";
 import { Trash2 } from "lucide-react";
-import { useEffect, useMemo, useOptimistic, useRef, useState } from "react";
+import { useEffect, useMemo, useOptimistic, useState } from "react";
 import CountUp from "react-countup";
 import { useFormStatus } from "react-dom";
 import Calendar from "./Calendar";
 import RecurringExpenseChart from "./Charts/RecurringExpenseChart";
-import * as motion from "motion/react-client";
-import { AnimatePresence } from "motion/react";
 import { SlideDownWrapper } from "./common/SlideDownWrapper";
-import { useSetAtom } from "jotai";
-import { surplusAtom } from "@/atoms/dashboard-atoms";
-import { any, z } from "zod";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm as useMantineForm } from "@mantine/form";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -104,16 +103,13 @@ const MantineFormContent = ({ form }: any) => {
         className="w-[50%] mt-2 pr-2 md:mt-0 md:pl-2 md:w-[150px]"
         hideControls
       />
-      <Select
+      <DateInput
         key={form.key("day")}
         {...form.getInputProps("day")}
-        name="day"
-        placeholder="Day"
-        data={Array.from({ length: 31 }, (v, i) => String(i + 1))}
-        allowDeselect={true}
-        defaultValue={null}
-        searchable
+        valueFormat="DD"
+        placeholder="Optional Day"
         clearable
+        defaultValue={null}
         className="w-[50%] mt-2 md:mt-0 md:mr-2 md:w-[135px]"
       />
       <Select
@@ -137,10 +133,66 @@ const MantineFormContent = ({ form }: any) => {
   );
 };
 
+const UpdateBudgetModal = ({ user }: { user: User }) => {
+  const [error, setError] = useState<string | undefined>();
+  const [monthlyBudget, setMonthlyBudget] = useState<number | undefined>();
+
+  useEffect(() => {
+    setMonthlyBudget(user?.monthly_budget);
+  }, [user]);
+
+  const [opened, handlers] = useDisclosure(false);
+
+  const handleUpdateBudget = async () => {
+    if (monthlyBudget && monthlyBudget > 0) {
+      await updateBudget(monthlyBudget);
+
+      setError("");
+
+      handlers.close();
+    } else {
+      setError("Please provide a valid budget");
+    }
+  };
+
+  return (
+    <>
+      <Button variant="light" c="blue" fw="normal" onClick={handlers.open}>
+        Update Budget
+      </Button>
+      <Modal opened={opened} onClose={handlers.close} title="Update User Info">
+        <NumberInput
+          hideControls
+          value={monthlyBudget}
+          prefix="$"
+          placeholder="Monthly Budget;"
+          onChange={(val) => setMonthlyBudget(val as number)}
+        />
+        {error && (
+          <Text size="sm" c="red">
+            {error}
+          </Text>
+        )}
+
+        <Group mt={20} justify="flex-end" gap="xs">
+          <Button bg="gray" onClick={handlers.close}>
+            Close
+          </Button>
+          <Button bg="gold" onClick={handleUpdateBudget}>
+            Submit
+          </Button>
+        </Group>
+      </Modal>
+    </>
+  );
+};
+
 const AddRecurringForm = ({
   optimisticUpdate,
+  user,
 }: {
   optimisticUpdate: ExpenseOptimisticUpdate;
+  user: User;
 }) => {
   const [showForm, setShowForm] = useState<boolean>(false);
 
@@ -180,14 +232,19 @@ const AddRecurringForm = ({
   return (
     <>
       <Group justify="space-between" mb="sm">
-        <Text size="1.75rem">Recurring Expenses</Text>
-        <Button
-          variant="light"
-          fw="normal"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Hide" : "Add"}
-        </Button>
+        <Text size="1.5rem">Monthly Expenses</Text>
+        <Group>
+          <UpdateBudgetModal user={user} />
+          <Button
+            variant="light"
+            c="blue"
+            fw="normal"
+            w="70px"
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Hide" : "Add"}
+          </Button>
+        </Group>
       </Group>
       <SlideDownWrapper isOpen={showForm}>
         <form onSubmit={form.onSubmit(handleAddExpense)}>
@@ -365,7 +422,10 @@ export function RecurringExpenses({ expenses, user, reminders }: ExpenseProps) {
 
   return (
     <Stack gap={0}>
-      <AddRecurringForm optimisticUpdate={optimisticExpensesUpdate} />
+      <AddRecurringForm
+        optimisticUpdate={optimisticExpensesUpdate}
+        user={user}
+      />
       <Stack
         style={{ width: "100%" }}
         gap="md"

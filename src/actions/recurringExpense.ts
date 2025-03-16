@@ -10,7 +10,7 @@ export async function addRecurringExpense(data: RecurringExpense) {
   const expense = data.expense_name as string | null;
   const amount = data.amount as string | null;
   const type = data.type as string | null;
-  const day = data.day as string | null;
+  const day = data.day as Date | null;
 
   if (!expense) {
     throw new Error("Expense name is required");
@@ -36,7 +36,7 @@ export async function addRecurringExpense(data: RecurringExpense) {
     expense_name: expense,
     amount: Number(amount),
     type,
-    day,
+    day: day ? String(new Date(day).getDate()) : null,
     user_id: user.id,
   });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { updateUserDetails } from "@/actions/budget";
 import {
   Button,
   Group,
@@ -10,36 +11,33 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
-import updateUserDetails from "@/actions/budget";
 import { useEffect, useState } from "react";
 
-export const UpdateBudgetModal = ({
+export const UpdatePreferencesModal = ({
   currentName,
   currentBudget,
 }: {
   currentName: string | undefined;
   currentBudget: number | undefined;
 }) => {
-  const [monthlyBudget, setMonthlyBudget] = useState<number | undefined>();
   const [name, setName] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
-    setMonthlyBudget(currentBudget);
     setName(currentName);
   }, [currentName, currentBudget]);
 
   const [opened, handlers] = useDisclosure(false);
 
-  const handleUpdateBudget = async () => {
-    if (monthlyBudget && monthlyBudget > 0) {
-      await updateUserDetails(monthlyBudget, name);
+  const handleUpdate = async () => {
+    if (name && name.length > 0) {
+      await updateUserDetails(name);
 
       setError("");
 
       handlers.close();
     } else {
-      setError("Please provide a valid budget");
+      setError("Please provide a valid name");
     }
   };
 
@@ -49,7 +47,7 @@ export const UpdateBudgetModal = ({
         onClick={handlers.open}
         className="hover:cursor-pointer hover:text-blue-600"
       >
-        Update Budget
+        Preferences
       </Text>
       <Modal opened={opened} onClose={handlers.close} title="Update User Info">
         <TextInput
@@ -58,13 +56,6 @@ export const UpdateBudgetModal = ({
           value={name}
           mb="sm"
           onChange={(e) => setName(e.currentTarget.value as string)}
-        />
-        <NumberInput
-          hideControls
-          placeholder="Input Monthly Budget"
-          value={monthlyBudget}
-          label="Budget"
-          onChange={(val) => setMonthlyBudget(val as number)}
         />
         {error && (
           <Text size="sm" c="red">
@@ -76,7 +67,7 @@ export const UpdateBudgetModal = ({
           <Button bg="gray" onClick={handlers.close}>
             Close
           </Button>
-          <Button bg="gold" onClick={handleUpdateBudget}>
+          <Button bg="gold" onClick={handleUpdate}>
             Submit
           </Button>
         </Group>

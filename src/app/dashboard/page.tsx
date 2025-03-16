@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { Stack } from "@mantine/core";
+import { Divider, Stack } from "@mantine/core";
 
 import RecurringExpenses from "@/components/RecurringExpenses";
 import { Reminders } from "@/components/Reminders";
@@ -56,6 +56,7 @@ export default async function Dashboard() {
             expenses={recurringExpenses}
             reminders={reminders}
           />
+          <Divider mx="xl" my="2rem" />
           <UniqueExpenses expenses={uniqueExpenses} />
           <Reminders reminders={reminders} />
         </Stack>

@@ -14,7 +14,9 @@ export default function LoginPage() {
 
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+
     const { success } = await login(email, password);
 
     if (!success) {
@@ -61,13 +63,13 @@ export default function LoginPage() {
             />
             <Button
               onClick={handleLogin}
+              type="submit"
               bg="gold"
               className="rounded-md w-full"
             >
               Log In
             </Button>
             <Button
-              type="submit"
               variant="transparent"
               c="blue"
               fw="normal"
