@@ -20,13 +20,13 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useMemo, useState } from "react";
+
+import "./calendar.css";
 import {
   formatNumber,
   getCalendarDate,
   getFirstDayInMonth,
-} from "../../utils/utilityFunctions";
-
-import "./calendar.css";
+} from "../../../utils/utilityFunctions";
 interface AddReminderProps {
   date: string | undefined;
   opened: boolean;
@@ -140,7 +140,7 @@ const ViewEventModal = ({ event, opened, open, close }: ViewModalProps) => {
   );
 };
 
-const Calendar = ({
+export const RecurringCalendar = ({
   expenses,
   reminders,
 }: {
@@ -232,4 +232,4 @@ const Calendar = ({
   );
 };
 
-export default Calendar;
+export default RecurringCalendar;

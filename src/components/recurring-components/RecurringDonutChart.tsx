@@ -1,22 +1,13 @@
 import { DonutChart } from "@mantine/charts";
 
-import { RecurringExpense } from "@/types/app";
 import { EXPENSE_MAP } from "@/enums/ExpenseTypes";
-import {
-  Box,
-  Button,
-  Flex,
-  Group,
-  SegmentedControl,
-  Stack,
-  Text,
-  Transition,
-} from "@mantine/core";
-import { ResponsiveContainer } from "recharts";
+import { RecurringExpense } from "@/types/app";
 import "@mantine/charts/styles.css";
-import { formatNumber } from "../../../utils/utilityFunctions";
-import { useMemo, useState } from "react";
+import { Box, Group, SegmentedControl, Stack, Text } from "@mantine/core";
 import { useViewportSize } from "@mantine/hooks";
+import { useMemo, useState } from "react";
+import { ResponsiveContainer } from "recharts";
+import { formatNumber } from "../../../utils/utilityFunctions";
 import { SlideDownWrapper } from "../common/SlideDownWrapper";
 
 interface ExpenseProp {
@@ -32,7 +23,7 @@ const LegendItem = ({ color, name }: { color: string; name: string }) => {
   );
 };
 
-function RecurringExpenseChart({ expenses }: ExpenseProp) {
+export const RecurringDonutChart = ({ expenses }: ExpenseProp) => {
   // const randomHexColor = require('random-hex-color');
   const [showStatus, setShowStatus] = useState("hide");
 
@@ -98,6 +89,6 @@ function RecurringExpenseChart({ expenses }: ExpenseProp) {
       </Group>
     </Stack>
   );
-}
+};
 
-export default RecurringExpenseChart;
+export default RecurringDonutChart;

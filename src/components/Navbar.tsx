@@ -48,7 +48,7 @@ const Navbar = () => {
     <nav className="bg-white border-gray-200">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto py-4 px-6 md:px-10">
         <Link
-          href="/"
+          href="/dashboard"
           className="text-3xl font-bold text-[#fac01d]"
           color="gold"
         >

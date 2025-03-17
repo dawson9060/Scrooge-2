@@ -1,36 +1,20 @@
 "use client";
 
-import {
-  addUniqueExpense,
-  deleteUniqueExpense,
-} from "@/actions/uniqueExpenses";
 import { UniqueExpense } from "@/types/app";
-import {
-  ActionIcon,
-  Box,
-  Button,
-  Group,
-  NumberInput,
-  Popover,
-  Select,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
-import { MonthPicker } from "@mantine/dates";
+import { Button, Group, Stack, Text } from "@mantine/core";
 import "@mantine/dates/styles.css";
-import { useForm } from "@mantine/form";
-import { IconCirclePlus, IconDownload } from "@tabler/icons-react";
-import { Trash2 } from "lucide-react";
+import { IconDownload } from "@tabler/icons-react";
 import { useMemo, useOptimistic, useState } from "react";
-import CountUp from "react-countup";
-import { useFormStatus } from "react-dom";
 import { jsonToCSV } from "react-papaparse";
 import {
   getFirstDayInMonth,
   getLastDayInMonth,
 } from "../../utils/utilityFunctions";
-import UniqueExpenseChart from "./Charts/UniqueExpenseCharts";
+import { DatePickerPopover } from "./unique-components/DatePickerPopover";
+import { TransactionItem } from "./unique-components/TransactionItem";
+import UniqueExpenseChart from "./unique-components/UniqueExpenseCharts";
+import { UniqueFormWrapper } from "./unique-components/UniqueFormWrapper";
+import { UniqueSummarySection } from "./unique-components/UniqueSummarySection";
 
 export type Action = "delete" | "update" | "create";
 export type ExpenseOptimisticUpdate = (action: {
@@ -61,233 +45,6 @@ export const uniqueReducer = (
     default:
       return state;
   }
-};
-
-const FormContent = ({ form }: any) => {
-  const { pending } = useFormStatus();
-
-  return (
-    <Group gap={0}>
-      <TextInput
-        key={form.key("expense")}
-        {...form.getInputProps("expense")}
-        name="expense"
-        required
-        className="w-full mb-2 md:mb-0 md:w-[250px]"
-        placeholder="Expense Name"
-      />
-      <NumberInput
-        key={form.key("amount")}
-        {...form.getInputProps("amount")}
-        name="amount"
-        required
-        min={1}
-        prefix="$"
-        clampBehavior="strict"
-        className="w-1/2 pr-2 md:px-2 md:w-[150px]"
-        hideControls
-        placeholder="Amount"
-      />
-      <Select
-        key={form.key("type")}
-        {...form.getInputProps("type", { type: "select" })}
-        name="type"
-        placeholder="Pick value"
-        data={["expense", "deposit"]}
-        className="w-1/2 md:w-[160px]"
-        searchable
-      />
-      <Box className="w-full mt-2 md:pt-0 md:ml-2 md:mt-0 md:w-fit">
-        <Button bg="gold" type="submit" fullWidth loading={pending}>
-          <IconCirclePlus />
-        </Button>
-      </Box>
-    </Group>
-  );
-};
-
-const AddForm = ({
-  optimisticUpdate,
-}: {
-  optimisticUpdate: ExpenseOptimisticUpdate;
-}) => {
-  const form = useForm({
-    mode: "uncontrolled",
-    initialValues: {
-      expense: "",
-      amount: null,
-      type: "expense",
-    },
-
-    // validate: {
-    //   email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-    // },
-  });
-
-  const handleAddExpense = async (data: any) => {
-    const newExpense: UniqueExpense = {
-      id: -1,
-      created_at: "",
-      user_id: "",
-      type: data.type,
-      amount: Number(data.amount ?? 0),
-      expense_name: data.expense,
-    };
-
-    optimisticUpdate({ action: "create", expense: newExpense });
-
-    await addUniqueExpense(data);
-
-    form.reset();
-  };
-
-  return (
-    <Box>
-      <form onSubmit={form.onSubmit(handleAddExpense)}>
-        <FormContent form={form} />
-      </form>
-    </Box>
-  );
-};
-
-const CountWrapper = ({
-  number,
-  title,
-  duration,
-}: {
-  number: number;
-  title: string;
-  duration: number;
-}) => {
-  return (
-    <Group
-      gap="2"
-      miw={170}
-      style={{ fontSize: "18px" }}
-      justify="center"
-      wrap="nowrap"
-      className=""
-    >
-      <Text size="18px">{title}:</Text>
-      <CountUp
-        end={number}
-        style={{ minWidth: "65px" }}
-        duration={duration}
-        enableScrollSpy
-        scrollSpyOnce
-        formattingFn={(num) => "$" + num.toLocaleString()}
-      />
-    </Group>
-  );
-};
-
-const ExpenseStats = ({ expenses }: ExpenseProps) => {
-  const { totalExpenses, largestExpense } = useMemo(() => {
-    let total = 0;
-    let largest = 0;
-
-    expenses?.forEach((expense) => {
-      if (expense.type === "expense" && expense.amount > largest) {
-        largest = expense.amount;
-      }
-
-      if (expense.type === "expense") {
-        total += expense.amount;
-      } else {
-        total -= expense.amount;
-      }
-    });
-
-    return { totalExpenses: total, largestExpense: largest };
-  }, [expenses]);
-
-  return (
-    <Group className="bg-white rounded-md w-full p-4" mih={60}>
-      <Box className="gap-2 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-4">
-        <CountWrapper number={totalExpenses} title="Total" duration={1} />
-        <CountWrapper number={largestExpense} title="Largest" duration={2} />
-      </Box>
-    </Group>
-  );
-};
-
-const TransactionItem = ({
-  expense,
-  optimisticUpdate,
-}: {
-  expense: UniqueExpense;
-  optimisticUpdate: ExpenseOptimisticUpdate;
-}) => {
-  const handleDelete = async () => {
-    optimisticUpdate({ action: "delete", expense });
-
-    await deleteUniqueExpense(expense.id);
-  };
-
-  return (
-    <Group
-      className="w-full lg:w-[49%] overflow-hidden shadow-md p-2 rounded-md bg-white relative transition-all"
-      justify="space-between"
-      wrap="nowrap"
-    >
-      <Box
-        className="w-3 h-full absolute left-0 rounded-tl-md rounded-bl-md"
-        bg={expense.type === "expense" ? "red" : "green"}
-      />
-      <Group className="flex-wrap sm:flex-nowrap w-full ml-4">
-        <Text className="w-full sm:w-auto sm:flex-1">
-          {expense.expense_name}
-        </Text>
-        <Text
-          className="w-[70px]"
-          c={expense.type === "expense" ? "red" : "green"}
-        >
-          ${expense.amount}
-        </Text>
-        <Text className="w-[70px]">
-          {new Date(expense.created_at).toLocaleDateString()}
-        </Text>
-      </Group>
-      <Box className="h-full flex-col justify-center align-middle">
-        <ActionIcon variant="transparent" color="black" size="30px">
-          <Trash2 onClick={() => handleDelete()} />
-        </ActionIcon>
-      </Box>
-    </Group>
-  );
-};
-
-const DatePickerPopover = ({
-  selectedRange,
-  setSelectedRange,
-}: {
-  selectedRange: [Date, Date];
-  setSelectedRange: Function;
-}) => {
-  let date = selectedRange[0].toLocaleString("default", { month: "long" });
-  if (selectedRange[1])
-    date +=
-      " - " + selectedRange[1].toLocaleString("default", { month: "long" });
-
-  return (
-    <Popover width={200} position="bottom-end" withArrow shadow="md">
-      <Popover.Target>
-        <Button fw="normal" bg="gold">
-          {date}
-        </Button>
-      </Popover.Target>
-      <Popover.Dropdown miw={300}>
-        <Group justify="center" align="center">
-          <MonthPicker
-            maxDate={new Date()}
-            type="range"
-            value={selectedRange}
-            onChange={(val) => setSelectedRange(val)}
-          />
-        </Group>
-      </Popover.Dropdown>
-    </Popover>
-  );
 };
 
 export function UniqueExpenses({ expenses }: ExpenseProps) {
@@ -364,14 +121,14 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
           </Button>
         </Group>
       </Group>
-      <AddForm optimisticUpdate={optimisticUpdate} />
+      <UniqueFormWrapper optimisticUpdate={optimisticUpdate} />
       <Stack
         style={{ width: "100%" }}
         gap="md"
         className="bg-slate-100 rounded-md p-4 shadow-lg"
         align="flex-start"
       >
-        <ExpenseStats expenses={expensesInRange ?? []} />
+        <UniqueSummarySection expenses={expensesInRange ?? []} />
         <Group w="100%" wrap="wrap" pb="lg">
           {expensesInRange?.map((expense) => (
             <TransactionItem
