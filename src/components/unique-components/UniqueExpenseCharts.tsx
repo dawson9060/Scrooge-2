@@ -2,7 +2,7 @@ import { AreaChart } from "@mantine/charts";
 
 import { UniqueExpense } from "@/types/app";
 import "@mantine/charts/styles.css";
-import { Box, Stack, Text } from "@mantine/core";
+import { Box, Stack, Text, useMantineColorScheme } from "@mantine/core";
 import { useMemo } from "react";
 import { ResponsiveContainer } from "recharts";
 import {
@@ -49,6 +49,8 @@ function createChartData(expenses: UniqueExpense[]) {
 function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
   const suprlus = useAtomValue(surplusAtom);
 
+  const { colorScheme } = useMantineColorScheme();
+
   const chartData = useMemo(() => {
     return createChartData(expenses);
   }, [expenses]);
@@ -64,7 +66,7 @@ function UniqueExpenseChart({ expenses, selectedRange }: ExpenseProp) {
         {chartData.length > 0 ? (
           <AreaChart
             h={"384px"}
-            bg="white"
+            bg={colorScheme === "light" ? "white" : "dark.0"}
             p="md"
             style={{ borderRadius: "12px" }}
             data={chartData ?? []}

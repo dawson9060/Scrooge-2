@@ -1,19 +1,17 @@
 "use client";
 
+import { useFetchReminders } from "@/actions/fetch/fetchReminders";
+import { useFetchUserInfo } from "@/actions/fetch/fetchUserInfo";
 import { showRemindersAtom } from "@/atoms/dashboard-atoms";
-import { RecurringExpense, Reminder, User } from "@/types/app";
 import { Group, Stack, Text } from "@mantine/core";
 import { useSetAtom } from "jotai";
 import { useMemo } from "react";
 import { getTimeGreeting } from "../../utils/utilityFunctions";
 
-interface Props {
-  user: User;
-  expenses: RecurringExpense[] | null;
-  reminders: Reminder[] | null;
-}
+export function Welcome() {
+  const { reminders } = useFetchReminders();
+  const { user } = useFetchUserInfo();
 
-export function Welcome({ user, reminders }: Props) {
   const setOpen = useSetAtom(showRemindersAtom);
 
   const upcomingCount = useMemo(() => {
@@ -35,11 +33,11 @@ export function Welcome({ user, reminders }: Props) {
   }, [reminders]);
 
   return (
-    <Stack className="my-10" mih={80}>
+    <Stack className="my-10 text-black" mih={80}>
       <Stack className="p-5 pb-3 rounded-lg shadow-md break-words" bg="#fabf1b">
         <Text size="30px" className="text-2xl">
           {getTimeGreeting(
-            user && user.full_name ? user.full_name : user.email
+            user && (user.full_name ? user.full_name : user.email)
           )}
         </Text>
         <Group

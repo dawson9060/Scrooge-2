@@ -2,7 +2,23 @@
 
 import { User } from "@/types/app";
 import { createClient } from "../../utils/supabase/server";
-import { revalidatePath } from "next/cache";
+
+const BlankUser: User = {
+  id: "",
+  full_name: "",
+  email: "",
+  monthly_budget: 0,
+  avatar_url: "",
+};
+
+// const fetchUserInfo = async () => {
+//   const supabase = createClient();
+
+//   // don't have to add check for user id since we are using row-level-security, will only return items matching user id
+//   const { data: user } = await supabase.from("users").select();
+
+//   return user ? user[0] : BlankUser;
+// };
 
 const updateBudget = async (budget: number) => {
   const supabase = createClient();
@@ -28,7 +44,7 @@ const updateBudget = async (budget: number) => {
     return null;
   }
 
-  revalidatePath("/dashboard");
+  return;
 };
 
 const updateUserDetails = async (name: string | undefined | null) => {
@@ -51,7 +67,8 @@ const updateUserDetails = async (name: string | undefined | null) => {
     return null;
   }
 
-  revalidatePath("/dashboard");
+  return;
 };
 
 export { updateBudget, updateUserDetails };
+// export { updateBudget, updateUserDetails, fetchUserInfo };

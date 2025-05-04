@@ -1,5 +1,6 @@
-import { RecurringExpense, Reminder } from "@/types/app";
-import { ActionIcon, Box, Group } from "@mantine/core";
+import { useFetchReminders } from "@/actions/fetch/fetchReminders";
+import { RecurringExpense } from "@/types/app";
+import { ActionIcon, Box, Group, useMantineColorScheme } from "@mantine/core";
 import { IconCalendarWeek, IconChartPie3 } from "@tabler/icons-react";
 import { useState } from "react";
 import { RecurringCalendar } from "./RecurringCalendar";
@@ -7,18 +8,23 @@ import RecurringDonutChart from "./RecurringDonutChart";
 
 export const RecurringCharts = ({
   expenses,
-  reminders,
 }: {
   expenses: RecurringExpense[] | null;
-  reminders: Reminder[] | null;
 }) => {
   const CHART = "chart";
   const CALENDAR = "calendar";
 
   const [selectedVisual, setSelectedVisual] = useState<string>(CHART);
 
+  const { reminders } = useFetchReminders();
+
+  const { colorScheme } = useMantineColorScheme();
+
   return (
-    <Box className="min-h-96 w-full bg-white rounded-lg">
+    <Box
+      className="min-h-96 w-full rounded-lg"
+      bg={colorScheme === "light" ? "white" : "dark.0"}
+    >
       <Group className="w-full" justify="center">
         <Group gap={0} w={150}>
           <ActionIcon
@@ -44,7 +50,7 @@ export const RecurringCharts = ({
       {selectedVisual === CHART ? (
         <RecurringDonutChart expenses={expenses} />
       ) : (
-        <RecurringCalendar expenses={expenses} reminders={reminders} />
+        <RecurringCalendar expenses={expenses} reminders={reminders ?? []} />
       )}
     </Box>
   );

@@ -1,40 +1,48 @@
 "use client";
 
 import { showRemindersAtom } from "@/atoms/dashboard-atoms";
-import { Burger, Drawer, DrawerBody, Group, Text } from "@mantine/core";
-import { useViewportSize } from "@mantine/hooks";
+import {
+  ActionIcon,
+  Box,
+  Burger,
+  Drawer,
+  DrawerBody,
+  Text,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from "@mantine/core";
+import { IconMoon, IconSunFilled } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createClient } from "../../utils/supabase/client";
-import { UpdatePreferencesModal } from "./Modals/UpdateBudgetModal";
+import { UpdatePreferencesModal } from "./Modals/UpdatePreferencesModal";
+import { useFetchUserInfo } from "@/actions/fetch/fetchUserInfo";
+import { User } from "@/types/app";
+
+const BlankUser: User = {
+  id: "",
+  full_name: "",
+  email: "",
+  monthly_budget: 0,
+  avatar_url: "",
+};
 
 const Navbar = () => {
   const [opened, setOpened] = useState(false);
-  const [name, setName] = useState<string | undefined>();
-  const [budget, setBudget] = useState<number | undefined>();
 
   const setOpenReminders = useSetAtom(showRemindersAtom);
 
-  const { height, width } = useViewportSize();
+  const { toggleColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme("light", {
+    getInitialValueInEffect: true,
+  });
+
+  const { user } = useFetchUserInfo();
+  // const user = BlankUser;
 
   const router = useRouter();
-
-  const getUser = async () => {
-    const supabase = createClient();
-
-    const { data: userInfo } = await supabase.from("users").select();
-
-    if (userInfo) {
-      setName(userInfo[0].full_name);
-      setBudget(userInfo[0].monthly_budget);
-    }
-  };
-
-  useEffect(() => {
-    getUser();
-  }, []);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -45,7 +53,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white border-gray-200">
+    <Box className="w-full">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto py-4 px-6 md:px-10">
         <Link
           href="/dashboard"
@@ -55,25 +63,37 @@ const Navbar = () => {
           Scrooge
         </Link>
 
-        {width > 550 ? (
-          <Group gap="xl">
-            <UpdatePreferencesModal currentName={name} currentBudget={budget} />
-            <Text
-              className="hover:text-blue-500 hover:cursor-pointer"
-              onClick={() => setOpenReminders(true)}
-            >
-              Reminders
-            </Text>
-            <Text
-              className="hover:text-blue-500 hover:cursor-pointer"
-              onClick={() => handleSignOut()}
-            >
-              Logout
-            </Text>
-          </Group>
-        ) : (
-          <Burger opened={opened} onClick={() => setOpened((o) => !o)} />
-        )}
+        <Box className="hidden md:flex flex-row flex-nowrap gap-6">
+          <UpdatePreferencesModal user={user} />
+          <Text
+            className="hover:text-blue-500 hover:cursor-pointer"
+            onClick={() => setOpenReminders(true)}
+          >
+            Reminders
+          </Text>
+          <Text
+            className="hover:text-blue-500 hover:cursor-pointer"
+            onClick={() => handleSignOut()}
+          >
+            Logout
+          </Text>
+          <ActionIcon
+            size="sm"
+            variant="transparent"
+            onClick={toggleColorScheme}
+          >
+            {computedColorScheme === "dark" ? (
+              <IconSunFilled color="ghostwhite" />
+            ) : (
+              <IconMoon color="black" />
+            )}
+          </ActionIcon>
+        </Box>
+        <Burger
+          className="block md:hidden"
+          opened={opened}
+          onClick={() => setOpened((o) => !o)}
+        />
       </div>
       <Drawer
         opened={opened}
@@ -82,7 +102,7 @@ const Navbar = () => {
         title="Actions"
       >
         <DrawerBody pt="lg">
-          <UpdatePreferencesModal currentName={name} currentBudget={budget} />
+          <UpdatePreferencesModal user={user} />
           <Text
             pt="md"
             className="hover:text-blue-500 hover:cursor-pointer"
@@ -97,9 +117,21 @@ const Navbar = () => {
           >
             Logout
           </Text>
+          <ActionIcon
+            mt="md"
+            size="md"
+            variant="transparent"
+            onClick={toggleColorScheme}
+          >
+            {computedColorScheme === "dark" ? (
+              <IconSunFilled color="ghostwhite" />
+            ) : (
+              <IconMoon color="black" />
+            )}
+          </ActionIcon>
         </DrawerBody>
       </Drawer>
-    </nav>
+    </Box>
   );
 };
 

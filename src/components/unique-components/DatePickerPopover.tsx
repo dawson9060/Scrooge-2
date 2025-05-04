@@ -1,5 +1,5 @@
 import { Button, Group, Popover } from "@mantine/core";
-import { MonthPicker } from "@mantine/dates";
+import { DatesRangeValue, MonthPicker } from "@mantine/dates";
 import "@mantine/dates/styles.css";
 
 export const DatePickerPopover = ({
@@ -14,10 +14,18 @@ export const DatePickerPopover = ({
     date +=
       " - " + selectedRange[1].toLocaleString("default", { month: "long" });
 
+  const handleSelect = (range: DatesRangeValue) => {
+    if (!range[0]) {
+      setSelectedRange([new Date(), null]);
+    } else {
+      setSelectedRange(range);
+    }
+  };
+
   return (
     <Popover width={200} position="bottom-end" withArrow shadow="md">
       <Popover.Target>
-        <Button fw="normal" bg="gold">
+        <Button fw="normal" color="gold">
           {date}
         </Button>
       </Popover.Target>
@@ -27,7 +35,7 @@ export const DatePickerPopover = ({
             maxDate={new Date()}
             type="range"
             value={selectedRange}
-            onChange={(val) => setSelectedRange(val)}
+            onChange={(val: DatesRangeValue) => handleSelect(val)}
           />
         </Group>
       </Popover.Dropdown>

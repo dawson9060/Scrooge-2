@@ -1,8 +1,18 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { createClient } from "../../utils/supabase/server";
 import { RecurringExpense } from "@/types/app";
+import { createClient } from "../../utils/supabase/server";
+
+export const fetchRecurringExpenses = async () => {
+  const supabase = createClient();
+
+  const { data: recurringExpenses } = await supabase
+    .from("recurringExpenses")
+    .select()
+    .order("amount", { ascending: false });
+
+  return recurringExpenses;
+};
 
 export async function addRecurringExpense(data: RecurringExpense) {
   const supabase = createClient();
@@ -11,6 +21,7 @@ export async function addRecurringExpense(data: RecurringExpense) {
   const amount = data.amount as string | null;
   const type = data.type as string | null;
   const day = data.day as Date | null;
+  const timestamp = data.timestamp as number;
 
   if (!expense) {
     throw new Error("Expense name is required");
@@ -38,13 +49,14 @@ export async function addRecurringExpense(data: RecurringExpense) {
     type,
     day: day ? String(new Date(day).getDate()) : null,
     user_id: user.id,
+    timestamp,
   });
 
   if (error) {
     throw new Error("Error adding expense");
   }
 
-  revalidatePath("/dashboard");
+  return;
 }
 
 export async function deleteRecurringExpense(id: number) {
@@ -67,7 +79,7 @@ export async function deleteRecurringExpense(id: number) {
     throw new Error("Error deleting recurring expense");
   }
 
-  revalidatePath("/dashboard");
+  return;
 }
 
 export async function updateRecurringExpense(
@@ -95,5 +107,5 @@ export async function updateRecurringExpense(
     throw new Error("Error updating recurring expense");
   }
 
-  revalidatePath("/dashboard");
+  return;
 }

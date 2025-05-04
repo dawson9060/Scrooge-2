@@ -1,6 +1,12 @@
 import { surplusAtom } from "@/atoms/dashboard-atoms";
 import { RecurringExpense, User } from "@/types/app";
-import { Box, Group, Text, Transition } from "@mantine/core";
+import {
+  Box,
+  Group,
+  Text,
+  Transition,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { useSetAtom } from "jotai";
 import { useEffect, useMemo, useState } from "react";
 import CountUp from "react-countup";
@@ -9,7 +15,7 @@ interface CountProps {
   number: number;
   title: string;
   duration: number;
-  color: string;
+  color?: string | null;
 }
 
 const CountWrapper = ({ number, title, duration, color }: CountProps) => {
@@ -24,7 +30,7 @@ const CountWrapper = ({ number, title, duration, color }: CountProps) => {
     >
       <Text size="18px">{title}:</Text>
       <CountUp
-        style={{ color: color, minWidth: "65px" }}
+        style={{ color: color ? color : "", minWidth: "65px" }}
         end={number}
         duration={duration}
         formattingFn={(num) => "$" + num.toLocaleString()}
@@ -42,20 +48,26 @@ export const SummarySection = ({
 }) => {
   const [mounted, setMounted] = useState<boolean>(false);
 
+  const { colorScheme } = useMantineColorScheme();
+
   const setSurplus = useSetAtom(surplusAtom);
 
   const { total, surplus } = useMemo(() => {
     let total = 0;
     expenses?.forEach((expense) => (total += expense.amount ?? 0));
 
-    return { total, surplus: user.monthly_budget - total };
+    return { total, surplus: (user?.monthly_budget ?? 0) - total };
   }, [expenses, user]);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => setSurplus(surplus), [surplus]);
 
   return (
-    <Group className="bg-white rounded-md w-full p-4" mih={60}>
+    <Group
+      className="rounded-md w-full p-4"
+      mih={60}
+      bg={colorScheme === "light" ? "white" : "dark.5"}
+    >
       <Transition
         mounted={mounted}
         transition="fade-right"
@@ -71,7 +83,6 @@ export const SummarySection = ({
               number={user.monthly_budget}
               title="Budget"
               duration={1}
-              color={"black"}
             />
             <CountWrapper
               number={total}

@@ -17,7 +17,7 @@ export const getLastDayInMonth = (date: Date) => {
   const month = date.getMonth() + 1;
   const year = date.getFullYear();
 
-  return new Date(year, month, 0);
+  return new Date(year, month, 0, 23, 59, 59);
 };
 
 export const getAllDaysInRange = (start: string, end: string) => {

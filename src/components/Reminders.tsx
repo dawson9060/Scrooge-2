@@ -1,8 +1,11 @@
 "use client";
 
-import { addReminder, deleteReminder } from "@/actions/reminders";
+import { useFetchReminders } from "@/actions/fetch/fetchReminders";
+import {
+  useAddReminder,
+  useDeleteReminder,
+} from "@/actions/mutate/mutateReminders";
 import { showRemindersAtom } from "@/atoms/dashboard-atoms";
-import { Reminder } from "@/types/app";
 import {
   ActionIcon,
   Box,
@@ -14,14 +17,22 @@ import {
   Stack,
   Text,
   TextInput,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useAtom } from "jotai";
 import { Trash2 } from "lucide-react";
 import { useMemo, useRef } from "react";
 
-export const Reminders = ({ reminders }: { reminders: Reminder[] | null }) => {
+export const Reminders = () => {
+  const { reminders, refetch } = useFetchReminders();
+
+  const addMutator = useAddReminder();
+  const deleteMutator = useDeleteReminder();
+
   const [open, setOpen] = useAtom(showRemindersAtom);
+
+  const { colorScheme } = useMantineColorScheme();
 
   const formRef = useRef();
 
@@ -50,15 +61,16 @@ export const Reminders = ({ reminders }: { reminders: Reminder[] | null }) => {
     const date = formData.get("date") as string;
 
     formData.set("date", date.substring(0, 10));
+    formData.set("date_timestamp", String(new Date(date).getTime()));
 
-    await addReminder(formData);
+    addMutator.mutate(formData);
 
     //@ts-ignore
     formRef?.current?.reset();
   };
 
   const handleDelete = async (id: number) => {
-    await deleteReminder(id);
+    deleteMutator.mutate(id);
   };
 
   return (
@@ -91,7 +103,7 @@ export const Reminders = ({ reminders }: { reminders: Reminder[] | null }) => {
                 required
               />
             </Group>
-            <Button mt="sm" bg="gold" fw="normal" w="100%" type="submit">
+            <Button mt="sm" color="gold" fw="normal" w="100%" type="submit">
               Add Reminder
             </Button>
           </form>
@@ -99,9 +111,10 @@ export const Reminders = ({ reminders }: { reminders: Reminder[] | null }) => {
           <Stack className="w-full h-full overflow-y-auto gap-3 pb-2">
             {formattedReminders?.map((reminder) => (
               <Group
-                key={reminder.id}
+                key={reminder.id ?? -1}
                 wrap="nowrap"
-                className="relative bg-slate-100 rounded-lg p-4 shadow-md"
+                className="relative bg-slate-100 rounded-lg p-2 shadow-md"
+                bg={colorScheme === "light" ? "gray.2" : "dark.3"}
               >
                 {/* @ts-ignore */}
                 {reminder.isUpcoming && (

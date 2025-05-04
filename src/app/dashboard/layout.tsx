@@ -9,7 +9,6 @@ export default function DashboardLayout({
 }) {
   return (
     <Stack gap={0}>
-      <Navbar />
       <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
       <Group
         bg="gold"

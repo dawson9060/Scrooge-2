@@ -1,5 +1,4 @@
-import { addUniqueExpense } from "@/actions/uniqueExpenses";
-import { UniqueExpense } from "@/types/app";
+import { useAddUniqueExpense } from "@/actions/mutate/mutateUnique";
 import {
   Box,
   Button,
@@ -8,20 +7,12 @@ import {
   Select,
   TextInput,
 } from "@mantine/core";
+import { DateInput, DatePicker } from "@mantine/dates";
 import "@mantine/dates/styles.css";
 import { useForm } from "@mantine/form";
 import { IconCirclePlus } from "@tabler/icons-react";
-import { useFormStatus } from "react-dom";
-
-export type Action = "delete" | "update" | "create";
-export type ExpenseOptimisticUpdate = (action: {
-  action: Action;
-  expense: UniqueExpense;
-}) => void;
 
 const FormContent = ({ form }: any) => {
-  const { pending } = useFormStatus();
-
   return (
     <Group gap={0}>
       <TextInput
@@ -29,7 +20,7 @@ const FormContent = ({ form }: any) => {
         {...form.getInputProps("expense")}
         name="expense"
         required
-        className="w-full mb-2 md:mb-0 md:w-[250px]"
+        className="w-full mb-2 lg:mb-0 lg:w-[250px]"
         placeholder="Expense Name"
       />
       <NumberInput
@@ -40,7 +31,7 @@ const FormContent = ({ form }: any) => {
         min={1}
         prefix="$"
         clampBehavior="strict"
-        className="w-1/2 pr-2 md:px-2 md:w-[150px]"
+        className="w-full mb-2 lg:mb-0 lg:px-2 lg:w-[150px]"
         hideControls
         placeholder="Amount"
       />
@@ -50,11 +41,18 @@ const FormContent = ({ form }: any) => {
         name="type"
         placeholder="Pick value"
         data={["expense", "deposit"]}
-        className="w-1/2 md:w-[160px]"
+        className="w-1/2 pr-1 lg:pr-2 lg:w-[140px]"
         searchable
       />
-      <Box className="w-full mt-2 md:pt-0 md:ml-2 md:mt-0 md:w-fit">
-        <Button bg="gold" type="submit" fullWidth loading={pending}>
+      <DateInput
+        key={form.key("user_date")}
+        {...form.getInputProps("user_date")}
+        name="user_date"
+        placeholder="Date"
+        className="w-1/2 pl-1 lg:w-[140px]"
+      />
+      <Box className="w-full mt-2 lg:pt-0 lg:ml-2 lg:mt-0 lg:w-fit">
+        <Button color="gold" type="submit" fullWidth>
           <IconCirclePlus />
         </Button>
       </Box>
@@ -62,38 +60,21 @@ const FormContent = ({ form }: any) => {
   );
 };
 
-export const UniqueFormWrapper = ({
-  optimisticUpdate,
-}: {
-  optimisticUpdate: ExpenseOptimisticUpdate;
-}) => {
+export const UniqueFormWrapper = () => {
+  const mutateUniqueExpense = useAddUniqueExpense();
+
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
       expense: "",
       amount: null,
       type: "expense",
+      user_date: new Date(),
     },
-
-    // validate: {
-    //   email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-    // },
   });
 
   const handleAddExpense = async (data: any) => {
-    const newExpense: UniqueExpense = {
-      id: -1,
-      created_at: "",
-      user_id: "",
-      type: data.type,
-      amount: Number(data.amount ?? 0),
-      expense_name: data.expense,
-    };
-
-    optimisticUpdate({ action: "create", expense: newExpense });
-
-    await addUniqueExpense(data);
-
+    mutateUniqueExpense.mutate({ ...data, timestamp: new Date().getTime() });
     form.reset();
   };
 

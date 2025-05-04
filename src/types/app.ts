@@ -14,6 +14,7 @@ export interface RecurringExpense {
   amount: number | null;
   expense_name: string;
   day: string | null;
+  timestamp: number;
 }
 
 export interface UniqueExpense {
@@ -23,6 +24,8 @@ export interface UniqueExpense {
   amount: number;
   expense_name: string;
   type: string;
+  timestamp: number;
+  user_date: number;
 }
 
 export interface Reminder {

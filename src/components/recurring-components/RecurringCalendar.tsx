@@ -27,6 +27,7 @@ import {
   getCalendarDate,
   getFirstDayInMonth,
 } from "../../../utils/utilityFunctions";
+import { getQueryClient } from "../../../utils/get-query-client";
 interface AddReminderProps {
   date: string | undefined;
   opened: boolean;
@@ -54,11 +55,15 @@ const EVENT = "event";
 const REMINDER = "reminder";
 
 const AddReminderModal = ({ date, opened, open, close }: AddReminderProps) => {
+  const queryClient = getQueryClient();
+
   const handleSave = async (data: FormData) => {
     if (data.get("name") !== "") {
       close();
 
       await addReminder(data);
+
+      queryClient.invalidateQueries({ queryKey: ["reminders"] });
     }
   };
 
@@ -88,18 +93,24 @@ const AddReminderModal = ({ date, opened, open, close }: AddReminderProps) => {
 };
 
 const ViewEventModal = ({ event, opened, open, close }: ViewModalProps) => {
+  const queryClient = getQueryClient();
+
   const type = event?.extendedProps.type;
 
   const handleReminderDelete = async () => {
     close();
 
     await deleteReminder(event?.extendedProps?.reminderId);
+
+    queryClient.invalidateQueries({ queryKey: ["reminders"] });
   };
 
   const handleExpenseDelete = async () => {
     close();
 
     await deleteRecurringExpense(event?.extendedProps?.expenseId);
+
+    queryClient.invalidateQueries({ queryKey: ["recurringExpenses"] });
   };
 
   return (
@@ -200,7 +211,7 @@ export const RecurringCalendar = ({
   };
 
   return (
-    <Stack w="100%" p="lg">
+    <Stack w="100%" p="lg" className="text-black">
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"

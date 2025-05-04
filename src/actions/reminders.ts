@@ -1,7 +1,17 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { createClient } from "../../utils/supabase/server";
+
+export const fetchReminders = async () => {
+  const supabase = createClient();
+
+  const { data: reminders } = await supabase
+    .from("reminders")
+    .select()
+    .order("date_timestamp", { ascending: true });
+
+  return reminders;
+};
 
 export async function addReminder(formData: FormData) {
   const supabase = createClient();
@@ -36,12 +46,12 @@ export async function addReminder(formData: FormData) {
     throw new Error("Error adding reminder");
   }
 
-  revalidatePath("/dashboard");
+  return;
 }
 
 export async function deleteReminder(id: number) {
   const supabase = createClient();
-
+  console.log("DELETING REMINDER: " + id);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -54,10 +64,11 @@ export async function deleteReminder(id: number) {
     user_id: user.id,
     id: id,
   });
-
+  console.log("1");
   if (error) {
+    console.log("2");
     throw new Error("Error deleting reminder");
   }
-
-  revalidatePath("/dashboard");
+  console.log("3");
+  return;
 }

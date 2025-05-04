@@ -1,9 +1,10 @@
+Move all useQuery hooks into their own useFetch"whatever" hook functions to simplify files
+Change all POSTS to useMutation hooks?
+Fix optimistic updates
+Dark Mode
+Animations on delete or add transaction items
+
+
 Add Custom Loading Spinner Icon
-Pick color pallete
 Update button and input styling
-Update transactions total and largest expense dynamically
-Dynamically set allowance threshold on line chart?
-transactions total and largest expense should not re-render on scroll
-format pie chart legend nicely
 Sort recurring expenses by amount or type option?
-shrink padding on phone size

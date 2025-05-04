@@ -1,10 +1,18 @@
 "use client";
 
-import { UniqueExpense } from "@/types/app";
-import { Button, Group, Stack, Text } from "@mantine/core";
+import { useFetchUniqueExpenses } from "@/actions/fetch/fetchUniqueExpenses";
+import {
+  Box,
+  Button,
+  Group,
+  Stack,
+  Text,
+  useMantineColorScheme,
+} from "@mantine/core";
 import "@mantine/dates/styles.css";
 import { IconDownload } from "@tabler/icons-react";
-import { useMemo, useOptimistic, useState } from "react";
+import { AnimatePresence } from "motion/react";
+import { useMemo, useState } from "react";
 import { jsonToCSV } from "react-papaparse";
 import {
   getFirstDayInMonth,
@@ -16,42 +24,11 @@ import UniqueExpenseChart from "./unique-components/UniqueExpenseCharts";
 import { UniqueFormWrapper } from "./unique-components/UniqueFormWrapper";
 import { UniqueSummarySection } from "./unique-components/UniqueSummarySection";
 
-export type Action = "delete" | "update" | "create";
-export type ExpenseOptimisticUpdate = (action: {
-  action: Action;
-  expense: UniqueExpense;
-}) => void;
+export function UniqueExpenses() {
+  const { expenses } = useFetchUniqueExpenses();
 
-interface ExpenseProps {
-  expenses: UniqueExpense[] | null;
-}
+  const { colorScheme } = useMantineColorScheme();
 
-interface ReducerProps {
-  action: Action;
-  expense: UniqueExpense;
-}
-
-export const uniqueReducer = (
-  state: UniqueExpense[],
-  { action, expense }: ReducerProps
-) => {
-  switch (action) {
-    case "delete":
-      return state.filter(({ id }) => id !== expense.id);
-    case "update":
-      return state.map((e) => (e.id === expense.id ? expense : e));
-    case "create":
-      return [...state, expense];
-    default:
-      return state;
-  }
-};
-
-export function UniqueExpenses({ expenses }: ExpenseProps) {
-  const [optimisticExpenses, optimisticUpdate] = useOptimistic(
-    expenses ?? [],
-    uniqueReducer
-  );
   const [selectedRange, setSelectedRange] = useState<[Date, Date | null]>([
     new Date(),
     null,
@@ -61,24 +38,13 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
     const start = getFirstDayInMonth(selectedRange[0]);
     const end = getLastDayInMonth(selectedRange[1] ?? selectedRange[0]);
 
-    // TODO - remove these after we're sure this all works
     const startMilli = start.getTime();
     const endMilli = end.getTime();
 
     return expenses?.filter((expense) => {
-      const creationMilli = new Date(expense.created_at).getTime();
-      return creationMilli >= startMilli && creationMilli <= endMilli;
+      return expense.user_date >= startMilli && expense.user_date <= endMilli;
     });
   }, [expenses, selectedRange]);
-
-  // TODO - MOVE THIS INTO DATE PICKER COMPONENT
-  const handleSelect = (range: [Date, Date]) => {
-    if (!range[0]) {
-      setSelectedRange([new Date(), null]);
-    } else {
-      setSelectedRange(range);
-    }
-  };
 
   const handleDownload = () => {
     const formattedExpenses = expensesInRange?.map((expense) => {
@@ -109,35 +75,34 @@ export function UniqueExpenses({ expenses }: ExpenseProps) {
   return (
     <Stack>
       <Group className="w-full" justify="space-between">
-        <Text size="1.5rem">Unique Expenses</Text>
+        <Text size="1.5rem">Unique Transactions</Text>
         <Group gap="md">
           <DatePickerPopover
             // @ts-ignore
             selectedRange={selectedRange}
-            setSelectedRange={(val: [Date, Date]) => handleSelect(val)}
+            setSelectedRange={setSelectedRange}
           />
-          <Button bg="gold" onClick={handleDownload}>
+          <Button color="gold" onClick={handleDownload}>
             <IconDownload />
           </Button>
         </Group>
       </Group>
-      <UniqueFormWrapper optimisticUpdate={optimisticUpdate} />
+      <UniqueFormWrapper />
       <Stack
         style={{ width: "100%" }}
         gap="md"
-        className="bg-slate-100 rounded-md p-4 shadow-lg"
+        className="rounded-md p-4 shadow-lg"
         align="flex-start"
+        bg={colorScheme === "light" ? "gray.2" : "dark.2"}
       >
         <UniqueSummarySection expenses={expensesInRange ?? []} />
-        <Group w="100%" wrap="wrap" pb="lg">
-          {expensesInRange?.map((expense) => (
-            <TransactionItem
-              expense={expense}
-              key={expense.id}
-              optimisticUpdate={optimisticUpdate}
-            />
-          ))}
-        </Group>
+        <Box w="100%" pb="lg">
+          <AnimatePresence initial={false} mode="sync">
+            {expensesInRange?.map((expense) => (
+              <TransactionItem expense={expense} key={expense.timestamp} />
+            ))}
+          </AnimatePresence>
+        </Box>
         <UniqueExpenseChart
           expenses={expensesInRange ?? []}
           selectedRange={selectedRange}

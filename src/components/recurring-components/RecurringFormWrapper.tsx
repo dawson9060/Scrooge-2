@@ -1,6 +1,6 @@
-import { addRecurringExpense } from "@/actions/recurringExpense";
+import { useAddRecurringExpenses } from "@/actions/mutate/mutateRecurring";
 import { EXPENSE_MAP, EXPENSE_UTILITY } from "@/enums/ExpenseTypes";
-import { RecurringExpense, User } from "@/types/app";
+import { User } from "@/types/app";
 import {
   Box,
   Button,
@@ -14,19 +14,10 @@ import { DateInput } from "@mantine/dates";
 import { useForm as useMantineForm } from "@mantine/form";
 import { IconCirclePlus } from "@tabler/icons-react";
 import { useState } from "react";
-import { useFormStatus } from "react-dom";
-import { UpdateBudgetModal } from "./UpdateBudgetModal";
 import { SlideDownWrapper } from "../common/SlideDownWrapper";
-
-export type Action = "delete" | "update" | "create";
-export type ExpenseOptimisticUpdate = (action: {
-  action: Action;
-  expense: RecurringExpense;
-}) => void;
+import { UpdateBudgetModal } from "./UpdateBudgetModal";
 
 const FormInput = ({ form }: any) => {
-  const { pending } = useFormStatus();
-
   return (
     <Group gap={0}>
       <TextInput
@@ -71,7 +62,7 @@ const FormInput = ({ form }: any) => {
         className="w-full mt-2 md:mt-0 md:w-[160px]"
       />
       <Box className="md:ml-2 w-full md:w-fit mt-2 md:mt-0">
-        <Button type="submit" bg="gold.5" fullWidth loading={pending}>
+        <Button type="submit" color="gold" fullWidth>
           <IconCirclePlus />
         </Button>
       </Box>
@@ -79,14 +70,10 @@ const FormInput = ({ form }: any) => {
   );
 };
 
-export const RecurringFormWrapper = ({
-  optimisticUpdate,
-  user,
-}: {
-  optimisticUpdate: ExpenseOptimisticUpdate;
-  user: User;
-}) => {
+export const RecurringFormWrapper = ({ user }: { user: User }) => {
   const [showForm, setShowForm] = useState<boolean>(false);
+
+  const expenseMutator = useAddRecurringExpenses();
 
   const form = useMantineForm({
     mode: "uncontrolled",
@@ -96,28 +83,10 @@ export const RecurringFormWrapper = ({
       day: "",
       type: EXPENSE_UTILITY,
     },
-
-    // validate: {
-    //   email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-    // },
   });
 
   const handleAddExpense = async (data: any) => {
-    // add fake data temporarily
-    const newExpense: RecurringExpense = {
-      id: -1,
-      created_at: "",
-      user_id: "",
-      day: "1",
-      amount: Number(String(data.amount).substring(1)),
-      type: data.type as string,
-      expense_name: data.expense as string,
-    };
-
-    optimisticUpdate({ action: "create", expense: newExpense });
-
-    await addRecurringExpense(data);
-
+    expenseMutator.mutate({ ...data, timestamp: Date.now() });
     form.reset();
   };
 

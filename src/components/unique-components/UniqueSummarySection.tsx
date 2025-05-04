@@ -1,5 +1,5 @@
 import { UniqueExpense } from "@/types/app";
-import { Box, Group, Text } from "@mantine/core";
+import { Box, Group, Text, useMantineColorScheme } from "@mantine/core";
 import "@mantine/dates/styles.css";
 import { useMemo } from "react";
 import CountUp from "react-countup";
@@ -40,6 +40,8 @@ const CountWrapper = ({
 };
 
 export const UniqueSummarySection = ({ expenses }: ExpenseProps) => {
+  const { colorScheme } = useMantineColorScheme();
+
   const { totalExpenses, largestExpense } = useMemo(() => {
     let total = 0;
     let largest = 0;
@@ -60,7 +62,11 @@ export const UniqueSummarySection = ({ expenses }: ExpenseProps) => {
   }, [expenses]);
 
   return (
-    <Group className="bg-white rounded-md w-full p-4" mih={60}>
+    <Group
+      className=" rounded-md w-full p-4"
+      mih={60}
+      bg={colorScheme === "light" ? "white" : "dark.5"}
+    >
       <Box className="gap-2 sm:gap-0 w-full flex flex-row flex-wrap justify-center md:justify-start md:gap-4">
         <CountWrapper number={totalExpenses} title="Total" duration={1} />
         <CountWrapper number={largestExpense} title="Largest" duration={2} />
