@@ -143,3 +143,5 @@ export const TransactionItem = React.forwardRef(
     // );
   }
 );
+
+TransactionItem.displayName = "TransactionItem";

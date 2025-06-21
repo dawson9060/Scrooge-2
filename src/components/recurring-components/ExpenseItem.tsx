@@ -9,7 +9,7 @@ import {
   useMantineColorScheme,
 } from "@mantine/core";
 import { IconEdit } from "@tabler/icons-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useSetAtom } from "jotai";
 import React from "react";
 
@@ -95,3 +95,5 @@ export const ExpenseItem = React.forwardRef(
     );
   }
 );
+
+ExpenseItem.displayName = "ExpenseItem";

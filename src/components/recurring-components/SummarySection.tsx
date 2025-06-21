@@ -60,7 +60,7 @@ export const SummarySection = ({
   }, [expenses, user]);
 
   useEffect(() => setMounted(true), []);
-  useEffect(() => setSurplus(surplus), [surplus]);
+  useEffect(() => setSurplus(surplus), [surplus, setSurplus]);
 
   return (
     <Group
